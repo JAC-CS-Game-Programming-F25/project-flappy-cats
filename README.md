@@ -1,117 +1,181 @@
-# Final Project
 
--   [ ] Read the [project requirements](https://vikramsinghmtl.github.io/420-5P6-Game-Programming/project/requirements).
--   [ ] Replace the sample proposal below with the one for your game idea.
--   [ ] Get the proposal greenlit by Vik.
--   [ ] Place any assets in `assets/` and remember to update `src/config.json`.
--   [ ] Decide on a height and width inside `src/globals.js`. The height and width will most likely be determined based on the size of the assets you find.
--   [ ] Start building the individual components of your game, constantly referring to the proposal you wrote to keep yourself on track.
--   [ ] Good luck, you got this!
+# Flappy Cats
+
+## 1. Description
+
+### • What is our game about?:
+
+Inspired by Flappy Bird, our game features a personalized and playful twist: the main character is our own cats. Instead of flapping wings, each cat floats using a balloon. The goal is simple but challenging : survive as long as possible, avoid obstacles, collect stars, manage lives, and maintain control as the difficulty increases over time.
+
+### • Who is the player? What are they doing?
+
+The player controls one of several cats, each with different physical properties (weight and size) that impact gameplay difficulty. The cat moves upward by tapping the spacebar, and gravity continuously pulls it downward. The player must time their taps carefully to navigate through gaps between pillars, avoid collisions, and aim to achieve the highest possible score.  
+The longer the player survives, the higher their score. There is no final level : it is an endless challenge.
+
+### Genre
+The game is an endless runner that focuses on arcade-style timing and precision mechanics, challenging the player to navigate through obstacles with careful, well-timed movements.
+
+### Control scheme
+
+#### • How the player controls the game.
+
+**SPACEBAR** -> Moves the cat upward  
+**Gravity** -> Pulls the cat downward  
+**P** -> Pauses the game (resuming triggers a 3-second countdown)
+
+### Gameplay / game loop
+
+• The player repeatedly taps the spacebar to stay airborne.  
+• Avoid hitting the pillars while navigating through narrow gaps.  
+• Collect stars to increase score.  
+• Collect hearts to regain lost lives.  
+• Survive as long as possible : the game has no win state, only a high score to beat.  
+• Difficulty naturally increases over time (smaller gaps, faster scrolling, more obstacles).  
+• Occasionally, collecting a star may trigger a random power-up:  
+  - Invincibility (5 seconds)  
+  - Slow-motion mode (5 seconds)  
+  *Only one is chosen randomly when triggered.*
+
+### Cat Selection System
+
+At the start of the game, the player chooses a cat. Each cat offers a different gameplay experience:  
+**Light cat** -> rises faster, easier to float but harder to control  
+**Heavy cat** -> falls faster, harder to keep up but more stable  
+**Big cat** -> larger hitbox makes the game more challenging  
+**Small cat** -> smaller hitbox, slightly easier to fit through gaps  
+
+These variations allow players to choose a character that matches their preferred difficulty and playstyle.
 
 ---
 
-# Sample Proposal - Pokémon the Trading Card Game
+## 2. Requirements (Player Abilities)
 
-> [!note]
-> This was taken from a project I did in university so the scope is **much** larger than what I'm expecting from you in terms of number of features!
+The player should be able to:
 
-## ✒️ Description
+### Choose their cat character
+- Select from multiple cats, each with unique weight/size affecting difficulty.  
+- Selected cat appears during gameplay and persists until changed.
 
-In this turn-based battle card game, players assume the role of a Pokémon trainer and use their Pokémon to battle their opponent's Pokémon. Players play Pokémon to the field and attack their opponent's Pokémon. A Pokémon that has sustained enough damage is Knocked Out, and the player who knocked it out draws a Prize card. There are usually six Prize cards, and the primary win condition is to draw all of them. Other ways to win are by knocking out all the Pokémon the opponent has on the field so that the opponent has none left, or if at the beginning of their opponent's turn there are no cards left to draw in the opponent's deck.
+### Control movement (flying)
+- SPACEBAR moves upward.  
+- Gravity pulls the cat down.  
+- Maintain precise height control to avoid pillars.
 
-## 🕹️ Gameplay
+### Navigate obstacles
+- Fly through gaps without touching pillars.  
+- React to dynamically generated pillar layouts.
 
-Players begin by having one player select heads or tails, and the other flips a coin; the winner of the coin flip will decide who goes first or second. The player going first cannot attack their first turn, unless the card says otherwise. (Dice may be used in place of coins, with even numbers representing heads and odd numbers representing tails). Players then shuffle their decks and draw seven cards, then play one Basic Pokémon onto the field. This Pokémon is known as the Active Pokémon and is usually the one that attacks and receives damage. If a player does not have any Basic Pokémon, they must shuffle and draw a new hand, and the opponent may draw one additional card. Once both players have at least one Basic Pokémon, they can play up to five more Basic Pokémon onto their "Bench" (representing the maximum-carry limit of six from the video games). Players then take the top six cards of their deck and place them to the side as Prize Cards. Play then begins with the player who won the coin flip.
+### Collect items
+**Stars:**  
+- Increase score.  
+- Trigger visual sparkle effect and sound.  
+- Occasionally activate a random power-up (5 seconds):  
+  • Invincibility  
+  • Slow motion  
 
-Play alternates between players who may take several actions during their turn, including playing new Basic Pokémon, evolving their Pokémon, playing Trainer cards and Energy cards, and using Pokémon Abilities. A player may also retreat their Active Pokémon, switching the Active Pokémon with one on the Bench. At the end of their turn, a player may use one of their Active Pokémon's attacks, provided the prerequisite amount and types of Energy are attached to that Pokémon. Effects from that attack are then activated and damage may be placed on the Defending Pokémon; some attacks simply have effects but do not do damage. Damage may be modified depending on whether the defender has a weakness or a resistance to the attacker's Pokémon type. If the final damage exceeds the defending Pokémon's HP, it is Knocked Out, and the active player takes a prize card and ends their turn.
+**Hearts:**  
+- Instantly restore one life (up to a max of 3).
 
-This implementation of _Pokémon the Trading Card Game_ is a single player experience with an AI. The game is played primarily with the mouse to interact with the cards and general GUI. The players can optionally hit `M` on their keyboard to mute all game sounds.
+### Track health and lives
+- Start with 3 lives.  
+- Lose 1 life when hitting a pillar.  
+- Lives are shown on screen (heart icons).  
+- If lives reach 0, the player loses.
 
-## 📃 Requirements
+### Lose the game
+Hitting 0 lives displays a **Game Over screen** including:  
+- Final score  
+- Stars collected  
+- Restart option  
+- Option to return to the main menu  
 
-> [!note]
-> This was a web project so that's why you'll see requirements about logging in and uploading data which for you is irrelevant. Focus more on the requirements describing actions taken for gameplay.
+### High score system
+- Highest score is permanently saved (local storage).  
+- High score persists across sessions.
 
-1. The user shall register to be able to login.
-2. The user shall login to be able to play a game.
-3. The user shall upload a valid deck file.
-4. The user shall upload a valid cards file.
-5. The user shall upload a valid abilities file.
-6. The user shall select which deck they will use in the game.
-7. The user shall select which deck the AI will use in the game.
-8. The system shall "flip a coin" to decide which player goes first.
-9. The system shall shuffle the user's deck.
-10. The system shall draw the top 7 cards from the user's deck.
-11. If the user does not have a Basic Pokémon in their hand the system shall "mulligan" until they do.
-12. Upon each mulligan, the AI shall draw a card.
-13. The user shall put one of their Basic Pokémon face down as their Active Pokémon.
-14. The user shall put up to 5 more Basic Pokémon face down on their Bench.
-15. Upon a new turn, the system shall draw a card from the deck of the current player.
-16. Upon a new turn, the system shall place the drawn card in the hand of the current player.
-17. The user shall put (up to 5 total) Basic Pokémon cards from their hand onto their Bench.
-18. The user shall Evolve their Pokémon as many times as they choose.
-19. The user shall attach an Energy card from their hand to one of their Pokémon once per turn.
-20. The user shall play Trainer cards (as many as they want, but only one Supporter card and one Stadium card per turn).
-21. The user shall Retreat their Active Pokémon once per turn.
-22. The user shall use as many Abilities as they choose.
-23. The user shall attack the opponent's Active Pokémon.
-24. After a player attacks, the system shall end their turn and start their opponent's turn.
-25. The system shall execute any "special conditions" after a turn is over.
-26. The user shall pick a Victory Card when the opposing Active Pokémon dies.
+### Pause and resume
+- Press **P** to pause.  
+- Pause menu appears.  
+- Resuming plays a 3-second countdown.
 
-### 🤖 State Diagram
+### Persistence
+The game includes full state persistence if:  
+- The player refreshes the page  
+- The browser tab is closed and reopened  
+- The computer sleeps  
 
-> [!note]
-> Remember that you'll need diagrams for not only game states but entity states as well.
+The game loads exactly as it was, including:  
+- Cat position  
+- Pipe positions  
+- Current score and collected stars  
+- Current lives  
+- Active power-ups (with remaining time)  
+- Which cat was selected  
+- Pause state if relevant  
 
-![State Diagram](./assets/images/StateDiagram.png)
+This ensures the player can resume seamlessly.
 
-### 🗺️ Class Diagram
+---
 
-![Class Diagram](./assets/images/ClassDiagram.png)
+## 3. Diagrams
 
-### 🧵 Wireframes
+- **State Diagram**  
+![State Diagram](<img width="1126" height="881" alt="StateDiagram" src="https://github.com/user-attachments/assets/20363539-e075-431e-9b1f-036b0d83277a" />)
 
-> [!note]
-> Your wireframes don't have to be super polished. They can even be black/white and hand drawn. I'm just looking for a rough idea about what you're visualizing.
+- **Entity/Player State Diagram**  
+![Entity/Player Diagram](<img width="1259" height="853" alt="EntityPlayerDiagram" src="https://github.com/user-attachments/assets/d38476f9-ee15-4bdf-a220-50a287b23cec" />)
 
-![Main Menu](./assets/images/Main-Menu.png)
+- **Class Diagram**
+![Class Diagram](<img width="1412" height="882" alt="ClassDiagram" src="https://github.com/user-attachments/assets/733aa0af-60d9-4504-bbd2-a46ca735e86f" />)
 
--   _Let's Play_ will navigate to the main game.
--   _Upload Cards_ will navigation to the forms for uploading and parsing the data files for the game.
--   _Change Log_ will navigate the user to a page with a list of features/changes that have been implemented throughout the development of the game.
+---
 
-![Game Board](./assets/images/Game-Board.png)
+## 4. Wireframes
+![Title](<img width="658" height="250" alt="FlappyCat" src="https://github.com/user-attachments/assets/63ec8aad-5e14-4bd3-a337-bfe8f7dab6be" />)
 
-We want to keep the GUI as simple and clear as possible by having cards with relevant images to act as a way for the user to intuitively navigate the game. We want to implement a layout that would look like as if one were playing a match of the Pokémon Trading Card Game with physical cards in real life. Clicking on any of the cards will reveal that card's details to the player.
 
-### 🎨 Assets
+![GameScreen](<img width="1246" height="1250" alt="GameScreen" src="https://github.com/user-attachments/assets/46593fc7-5d42-4ed4-bf31-816f277e7d02" />)
 
-We used [app.diagrams.net](https://app.diagrams.net/) to create the wireframes. Wireframes are the equivalent to the skeleton of a web app since they are used to describe the functionality of the product and the users experience.
 
-We plan on following trends already found in other trading card video games, such as Pokémon Trading Card Game Online, Hearthstone, Magic the Gathering Arena, and Gwent.
+![ScoreScreen](<img width="1257" height="1255" alt="ScoreScreen" src="https://github.com/user-attachments/assets/bd06cf52-2222-4205-9b21-0028d6c395f1" />)
 
-The GUI will be kept simple and playful, as to make sure the game is easy to understand what each component does and is, as well as light hearted to keep to the Pokémon theme.
+![MotyaCharacter](<img width="457" height="546" alt="Motya" src="https://github.com/user-attachments/assets/6487535a-2f0b-4c31-a304-1893eb92257f" />)
 
-#### 🖼️ Images
+![WeightedCharacter](<img width="1252" height="863" alt="WeightedCharacter" src="https://github.com/user-attachments/assets/e3fef3df-cf2c-4e25-8903-215e76b74204" />)
+Weighted character, bigger too
 
--   Most images will be used from the well known community driven wikipedia site, [Bulbapedia](https://bulbapedia.bulbagarden.net/wiki/Main_Page).
--   Especially their [Trading Card Game section](<https://bulbapedia.bulbagarden.net/wiki/Full_Art_card_(TCG)>).
+![CharacterSelection](![CharacterScreen](https://github.com/user-attachments/assets/f14116a9-7255-43fc-ac36-9b89a786f566))
 
-#### ✏️ Fonts
 
-For fonts, a simple sans-serif like Roboto will look quite nice. It's a font that is legible, light on storage size, and fun to keep with the theme we're going for. We also used a more cartoonish Pokemon font for the title screen.
+---
 
--   [Pokemon](https://www.dafont.com/pokemon.font)
--   [Roboto](https://fonts.google.com/specimen/Roboto)
+## 5. Assets Plan
 
-#### 🔊 Sounds
+### Images / Sprites
+- Player (cat floating with balloon) -> provided by student  
+- Pipes -> custom simple green pixel pipes  
+- Stars -> collectible gold stars  
+- Background -> sky + clouds (pixel art)
 
-All sounds were taken from [freesound.org](https://freesound.org) for the actions pertaining to cards.
+**Sources:**  
+- Student-created sprites  
+- Free-to-use pixel art textures from:  
+  https://itch.io/game-assets/free  
+  https://opengameart.org/
 
--   [Shuffle cards](https://freesound.org/people/VKProduktion/sounds/217502/)
--   [Flip card](https://freesound.org/people/Splashdust/sounds/84322/)
+### Fonts
+- Pixel font (from Dafont.com)  
+- Simple retro bitmap fonts for UI
 
-### 📚 References
+### Sounds
+All sounds from freesound.org and jsfxr online:  
+- Flap sound  
+- Pipe pass “ding”  
+- Collect star sparkle  
+- Game over “thud”
 
--   [Pokemon Rulebook](http://assets.pokemon.com/assets/cms2/pdf/trading-card-game/rulebook/xy8-rulebook-en.pdf)
+### References
+- Flappy Bird GDD community breakdowns  
+- Sounds from jsfxr online
+- Instructor sample proposal (Pokémon TCG)  
+- Pixel assets from itch.io and OpenGameArt
