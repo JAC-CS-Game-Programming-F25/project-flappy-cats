@@ -120,31 +120,36 @@ This ensures the player can resume seamlessly.
 ## 3. Diagrams
 
 - **State Diagram**  
-![State Diagram](<img width="1126" height="881" alt="StateDiagram" src="https://github.com/user-attachments/assets/20363539-e075-431e-9b1f-036b0d83277a" />)
+<img width="1126" height="881" alt="image" src="https://github.com/user-attachments/assets/d75cae30-2084-407c-83f9-6bfa885f911e" />
+
 
 - **Entity/Player State Diagram**  
-![Entity/Player Diagram](<img width="1259" height="853" alt="EntityPlayerDiagram" src="https://github.com/user-attachments/assets/d38476f9-ee15-4bdf-a220-50a287b23cec" />)
+<img width="1259" height="853" alt="image" src="https://github.com/user-attachments/assets/93b2ba5a-91a8-4107-b893-bb5a2e7d08f6" />
+
 
 - **Class Diagram**
-![Class Diagram](<img width="1412" height="882" alt="ClassDiagram" src="https://github.com/user-attachments/assets/733aa0af-60d9-4504-bbd2-a46ca735e86f" />)
+<img width="1412" height="882" alt="image" src="https://github.com/user-attachments/assets/5f78e59e-d170-4ac9-9375-984d408d2668" />
+
 
 ---
 
 ## 4. Wireframes
-![Title](<img width="658" height="250" alt="FlappyCat" src="https://github.com/user-attachments/assets/63ec8aad-5e14-4bd3-a337-bfe8f7dab6be" />)
+<img width="658" height="250" alt="image" src="https://github.com/user-attachments/assets/c45e3fd5-4621-4986-a1e2-5b9cbe97f7ab" />
 
 
-![GameScreen](<img width="1246" height="1250" alt="GameScreen" src="https://github.com/user-attachments/assets/46593fc7-5d42-4ed4-bf31-816f277e7d02" />)
+<img width="1246" height="1250" alt="GameScreen" src="https://github.com/user-attachments/assets/46593fc7-5d42-4ed4-bf31-816f277e7d02" />
 
 
-![ScoreScreen](<img width="1257" height="1255" alt="ScoreScreen" src="https://github.com/user-attachments/assets/bd06cf52-2222-4205-9b21-0028d6c395f1" />)
+<img width="1257" height="1255" alt="ScoreScreen" src="https://github.com/user-attachments/assets/bd06cf52-2222-4205-9b21-0028d6c395f1" />
 
-![MotyaCharacter](<img width="457" height="546" alt="Motya" src="https://github.com/user-attachments/assets/6487535a-2f0b-4c31-a304-1893eb92257f" />)
+<img width="457" height="546" alt="Motya" src="https://github.com/user-attachments/assets/6487535a-2f0b-4c31-a304-1893eb92257f" />
 
-![WeightedCharacter](<img width="1252" height="863" alt="WeightedCharacter" src="https://github.com/user-attachments/assets/e3fef3df-cf2c-4e25-8903-215e76b74204" />)
+<img width="1252" height="863" alt="WeightedCharacter" src="https://github.com/user-attachments/assets/e3fef3df-cf2c-4e25-8903-215e76b74204" />
 Weighted character, bigger too
 
-![CharacterSelection](![CharacterScreen](https://github.com/user-attachments/assets/f14116a9-7255-43fc-ac36-9b89a786f566))
+<br>
+
+<img width="480" height="289" alt="image" src="https://github.com/user-attachments/assets/24ad29e1-d045-4475-ae40-6a209ef89b0e" />
 
 
 ---
