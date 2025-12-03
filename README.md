@@ -142,7 +142,7 @@ This ensures the player can resume seamlessly.
 
 
 - **Class Diagram**
-<img width="1412" height="882" alt="image" src="https://github.com/user-attachments/assets/5f78e59e-d170-4ac9-9375-984d408d2668" />
+<img width="2616" height="1840" alt="classDiagram (2)" src="https://github.com/user-attachments/assets/6cab55d8-6d45-4a80-ab45-1f97b175aca7" />
 
 
 ---
