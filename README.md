@@ -31,10 +31,9 @@ The game is an endless runner that focuses on arcade-style timing and precision 
 • Collect hearts to regain lost lives.  
 • Survive as long as possible : the game has no win state, only a high score to beat.  
 • Difficulty naturally increases over time (smaller gaps, faster scrolling, more obstacles).  
-• Occasionally, collecting a star may trigger a random power-up:  
+• Occasionally, you can encounter a power-up:
   - Invincibility (5 seconds)  
   - Slow-motion mode (5 seconds)  
-  *Only one is chosen randomly when triggered.*
 
 ### Cat Selection System
 
@@ -81,6 +80,21 @@ The player should be able to:
 - Lose 1 life when hitting a pillar.  
 - Lives are shown on screen (heart icons).  
 - If lives reach 0, the player loses.
+
+### Power-Ups (Entities)
+
+Power-ups are **visible collectible objects**, not triggered by stars.
+
+**Types (each lasts 5 seconds):**
+- **InvinciblePowerUp** → collisions do not hurt the player  
+- **SlowPowerUp** → temporarily slows down the game  
+
+**These are implemented using inheritance:**
+- **PowerUp** (parent class)  
+  - InvinciblePowerUp  
+  - SlowPowerUp
+
+Each subclass defines its own behavior.
 
 ### Lose the game
 Hitting 0 lives displays a **Game Over screen** including:  
