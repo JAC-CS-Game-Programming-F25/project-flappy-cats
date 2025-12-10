@@ -1,7 +1,8 @@
 /**
- * Game Name
+ * Flappy Cats
  *
- * Authors
+ * Alaa Kirdi
+ * Antonina Kosyakova
  *
  * Brief description
  *
@@ -9,6 +10,7 @@
  */
 
 import GameStateName from './enums/GameStateName.js';
+import GameController from './GameController.js'; // Handles score, lives, selected cat, persistence
 import Game from '../lib/Game.js';
 import {
 	canvas,
@@ -23,8 +25,14 @@ import {
 } from './globals.js';
 import PlayState from './states/PlayState.js';
 import GameOverState from './states/GameOverState.js';
-import VictoryState from './states/VictoryState.js';
 import TitleScreenState from './states/TitleScreenState.js';
+import CatSelectState from './states/CatSelectState.js';
+import PauseState from './states/PauseState.js';
+import RestoreState from './states/RestoreState.js';
+
+// One shared GameController for the whole game.
+// All states will receive this so they can read/update score, lives, selected cat, etc.
+const gameController = new GameController();
 
 // Set the dimensions of the play area.
 canvas.width = CANVAS_WIDTH;
@@ -46,13 +54,29 @@ images.load(imageDefinitions);
 fonts.load(fontDefinitions);
 sounds.load(soundDefinitions);
 
-// Add all the states to the state machine.
-stateMachine.add(GameStateName.TitleScreen, new TitleScreenState());
-stateMachine.add(GameStateName.GameOver, new GameOverState());
-stateMachine.add(GameStateName.Victory, new VictoryState());
-stateMachine.add(GameStateName.Play, new PlayState());
+// // Add all the states to the state machine.
+// stateMachine.add(GameStateName.TitleScreen, new TitleScreenState());
+// stateMachine.add(GameStateName.GameOver, new GameOverState());
+// stateMachine.add(GameStateName.Victory, new VictoryState());
+// stateMachine.add(GameStateName.Play, new PlayState());
 
-stateMachine.change(GameStateName.Play);
+// stateMachine.change(GameStateName.Play);
+
+// Add all the states to the state machine.
+// We inject the same GameController instance into each state
+// so they all share score, lives, selected cat, persistence, etc.
+stateMachine.add(GameStateName.Restore, new RestoreState(gameController));       // First state: try to load saved run
+stateMachine.add(GameStateName.Title, new TitleScreenState(gameController));     // Title screen
+stateMachine.add(GameStateName.CatSelect, new CatSelectState(gameController));   // Cat selection screen
+stateMachine.add(GameStateName.Play, new PlayState(gameController));             // Main gameplay
+stateMachine.add(GameStateName.Pause, new PauseState(gameController));           // Pause + countdown
+stateMachine.add(GameStateName.GameOver, new GameOverState(gameController));     // Game over screen
+
+// Start in the Restore state.
+// If a save exists, RestoreState will jump to PlayState.
+// If not, it will go to TitleState.
+stateMachine.change(GameStateName.Restore);
+
 
 const game = new Game(
 	stateMachine,

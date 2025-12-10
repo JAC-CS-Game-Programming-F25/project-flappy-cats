@@ -1,11 +1,27 @@
 {
-	"images": [
+    "images": [
 
-	],
-	"fonts": [
+    ],
 
-	],
-	"sounds": [
-		
-	]
+    "fonts": [
+        {
+            "name": "FlappyLarge",
+            "src": "src/assets/fonts/FlappyBirdy.ttf",
+            "size": 48
+        },
+        {
+            "name": "FlappyMedium",
+            "src": "src/assets/fonts/FlappyBirdy.ttf",
+            "size": 32
+        },
+        {
+            "name": "FlappySmall",
+            "src": "src/assets/fonts/FlappyBirdy.ttf",
+            "size": 20
+        }
+    ],
+
+    "sounds": [
+        
+    ]
 }
