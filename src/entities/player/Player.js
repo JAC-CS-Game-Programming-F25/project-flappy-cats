@@ -131,6 +131,9 @@ export default class Player extends Entity {
 		// Update animation
 		this.currentAnimation.update(dt);
 
+		// Update power-up timer
+		this.updatePowerUp(dt);
+
 		// Handle hurt timer and shake effect
 		if (this.isHurt) {
 			this.hurtTimer -= dt;
@@ -247,7 +250,32 @@ export default class Player extends Entity {
 	}
 
 	applyPowerUp(powerUp) {
+		// Store the power-up and set timer
+		this.activePowerUp = powerUp;
+		this.powerUpTimer = powerUp.duration;
+		
+		// Apply the power-up effect immediately
 		powerUp.apply(this);
+	}
+
+	/**
+	 * Updates the active power-up timer and removes it when expired.
+	 * @param {number} dt - Delta time in seconds
+	 */
+	updatePowerUp(dt) {
+		if (this.activePowerUp && this.powerUpTimer > 0) {
+			this.powerUpTimer -= dt;
+			
+			// When timer expires, remove the power-up effect
+			if (this.powerUpTimer <= 0) {
+				// Call remove() method if it exists (will be implemented in PowerUp subclasses)
+				if (this.activePowerUp.remove) {
+					this.activePowerUp.remove(this);
+				}
+				this.activePowerUp = null;
+				this.powerUpTimer = 0;
+			}
+		}
 	}
 }
 
