@@ -6,6 +6,9 @@ import { smallSpriteConfig } from '../../config/SpriteConfig.js';
 import Pipe from './Pipe.js';
 
 export default class SlowPowerUp extends PowerUp {
+    // Store original pipe speed (only set once, on first application)
+    static originalSpeed = null;
+
     constructor(x, y) {
         super(x, y, 5); // 5 seconds duration
 
@@ -22,12 +25,19 @@ export default class SlowPowerUp extends PowerUp {
     }
 
     apply(player) {
-        // Slow down pipes
-        const originalSpeed = Pipe.SPEED;
-        Pipe.SPEED = originalSpeed / 2;
+        // Store original speed if not already stored
+        if (SlowPowerUp.originalSpeed === null) {
+            SlowPowerUp.originalSpeed = Pipe.SPEED;
+        }
 
-        setTimeout(() => {
-            Pipe.SPEED = originalSpeed;
-        }, this.duration * 1000);
+        // Slow down pipes to half speed
+        Pipe.SPEED = SlowPowerUp.originalSpeed / 2;
+    }
+
+    remove(player) {
+        // Restore original pipe speed
+        if (SlowPowerUp.originalSpeed !== null) {
+            Pipe.SPEED = SlowPowerUp.originalSpeed;
+        }
     }
 }

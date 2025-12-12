@@ -30,8 +30,9 @@ export default class InvinciblePowerUp extends PowerUp {
 
     apply(player) {
         player.isInvincible = true;
-        setTimeout(() => {
-            player.isInvincible = false;
-        }, this.duration * 1000);
+    }
+
+    remove(player) {
+        player.isInvincible = false;
     }
 }
