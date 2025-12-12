@@ -61,7 +61,14 @@ export default class PlayState extends State {
 		const playerX = CANVAS_WIDTH * 0.2;
 		const playerY = CANVAS_HEIGHT / 2;
 
-		this.player = new Player(playerX, playerY, playerWidth, playerHeight);
+		// Create player with selected cat from GameController
+		this.player = new Player(
+			playerX, 
+			playerY, 
+			playerWidth, 
+			playerHeight,
+			this.gameController.selectedCatIndex
+		);
 		this.pipes = [];
 		this.pipeSpawnTimer = 0;
 		this.isGameStarted = true;

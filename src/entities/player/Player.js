@@ -10,16 +10,47 @@ import Entity from '../Entity.js';
 import SoundName from "../../enums/SoundName.js";
 
 export default class Player extends Entity {
-	constructor(x, y, width, height) {
-		super(x, y, width, height);
+	/**
+	 * Returns cat configuration based on cat index.
+	 * @param {number} catIndex - Index of selected cat (0-3)
+	 * @returns {Object} Configuration with weight, size, and jumpStrength
+	 */
+	static getCatConfig(catIndex) {
+		const configs = [
+			// Index 0: Light Cat - rises faster, easier to float but harder to control
+			{ weight: 0.8, size: 1.0, jumpStrength: -450 },
+			// Index 1: Heavy Cat - falls faster, harder to keep up but more stable
+			{ weight: 1.5, size: 1.0, jumpStrength: -350 },
+			// Index 2: Big Cat - larger hitbox makes the game more challenging
+			{ weight: 1.2, size: 1.3, jumpStrength: -400 },
+			// Index 3: Small Cat - smaller hitbox, slightly easier to fit through gaps
+			{ weight: 1.0, size: 0.8, jumpStrength: -400 },
+		];
+
+		// Default to first cat if index is out of range
+		return configs[catIndex] || configs[0];
+	}
+
+	constructor(x, y, width, height, catIndex = 0) {
+		// Get cat configuration
+		const catConfig = Player.getCatConfig(catIndex);
+
+		// Apply size modifier to dimensions
+		const scaledWidth = width * catConfig.size;
+		const scaledHeight = height * catConfig.size;
+		super(x, y, scaledWidth, scaledHeight);
+
+		// Store base dimensions for reference
+		this.baseWidth = width;
+		this.baseHeight = height;
 
 		this.velocity = new Vector(0, 0);
 		this.gravity = 1500;
-		this.jumpStrength = -400;
+		this.jumpStrength = catConfig.jumpStrength;
 
-		// Cat modifiers
-		this.weight = 1.2; // Heavier than Mario
-		this.size = 1.0;   // Scale factor
+		// Cat modifiers from configuration
+		this.weight = catConfig.weight;
+		this.size = catConfig.size;
 
 		// Stats
 		this.maxHealth = 3;
