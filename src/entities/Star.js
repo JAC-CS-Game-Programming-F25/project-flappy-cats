@@ -1,5 +1,6 @@
 import Entity from './Entity.js';
 import Sprite from '../../lib/Sprite.js';
+import Animation from '../../lib/Animation.js';
 import { sounds } from '../globals.js';
 import SoundName from '../enums/SoundName.js';
 import { isAABBCollision } from '../../lib/Collision.js';
@@ -14,17 +15,19 @@ export default class Star extends Entity {
 
         this.isCollected = false;
 
-        // Use sparkles (Star) sprite
-        const frame = smallSpriteConfig.sparkles[0];
-        this.sprite = new Sprite(
-            spriteSheet,
-            frame.x,
-            frame.y,
-            frame.width,
-            frame.height
+        // Create sparkle animation from all sparkle frames
+        const sparkleSprites = smallSpriteConfig.sparkles.map(frame =>
+            new Sprite(
+                spriteSheet,
+                frame.x,
+                frame.y,
+                frame.width,
+                frame.height
+            )
         );
 
-        this.animationTimer = 0;
+        // Create animation with 0.15 second interval between frames
+        this.sparkleAnimation = new Animation(sparkleSprites, 0.15);
     }
 
     update(dt) {
@@ -32,12 +35,16 @@ export default class Star extends Entity {
 
         this.position.x -= 100 * dt; // Move with pipes
 
-        this.animationTimer += dt;
+        // Update sparkle animation
+        this.sparkleAnimation.update(dt);
     }
 
     render(context) {
         if (this.isCollected) return;
-        this.sprite.render(this.position.x, this.position.y);
+        
+        // Render current frame of sparkle animation
+        const frame = this.sparkleAnimation.getCurrentFrame();
+        frame.render(this.position.x, this.position.y);
     }
 
     collect(player) {

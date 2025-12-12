@@ -23,6 +23,8 @@ import {
 import Player from '../entities/player/Player.js';
 import PipePair from '../entities/PipePair.js';
 import PipeFactory from '../services/PipeFactory.js';
+import Star from '../entities/Star.js';
+import StarFactory from '../services/StarFactory.js';
 import ImageName from '../enums/ImageName.js';
 import Input from '../../lib/Input.js';
 
@@ -38,9 +40,13 @@ export default class PlayState extends State {
 		this.gameController = gameController;
 		this.player = null;
 		this.pipes = [];
+		this.stars = [];
 		this.pipeFactory = new PipeFactory();
+		this.starFactory = new StarFactory();
 		this.pipeSpawnTimer = 0;
 		this.pipeSpawnInterval = 2.0; // Spawn a pipe every 2 seconds
+		this.starSpawnTimer = 0;
+		this.starSpawnInterval = 3.0; // Spawn a star every 3 seconds
 		this.isGameStarted = false;
 	}
 
@@ -70,7 +76,9 @@ export default class PlayState extends State {
 			this.gameController.selectedCatIndex
 		);
 		this.pipes = [];
+		this.stars = [];
 		this.pipeSpawnTimer = 0;
+		this.starSpawnTimer = 0;
 		this.isGameStarted = true;
 
 		// Store player reference in gameController
@@ -129,6 +137,31 @@ export default class PlayState extends State {
 		if (this.pipeSpawnTimer >= this.pipeSpawnInterval) {
 			this.pipes.push(this.pipeFactory.spawn());
 			this.pipeSpawnTimer = 0;
+		}
+
+		// Spawn stars
+		this.starSpawnTimer += dt;
+		if (this.starSpawnTimer >= this.starSpawnInterval) {
+			this.stars.push(this.starFactory.spawn());
+			this.starSpawnTimer = 0;
+		}
+
+		// Update stars
+		for (let i = this.stars.length - 1; i >= 0; i--) {
+			const star = this.stars[i];
+			star.update(dt);
+
+			// Remove stars that are off screen or collected
+			if (star.isCollected || star.position.x + star.dimensions.x < 0) {
+				this.stars.splice(i, 1);
+				continue;
+			}
+
+			// Check collision with player
+			if (star.collidesWith(this.player)) {
+				star.collect(this.player);
+				this.gameController.addScore(5); // Award points for collecting star
+			}
 		}
 
 		// Update pipes
@@ -201,6 +234,11 @@ export default class PlayState extends State {
 		// Draw pipes
 		this.pipes.forEach(pipePair => {
 			pipePair.render(context);
+		});
+
+		// Draw stars
+		this.stars.forEach(star => {
+			star.render(context);
 		});
 
 		// Draw player
