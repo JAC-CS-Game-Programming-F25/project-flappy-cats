@@ -41,7 +41,7 @@ export default class GameController {
     saveGameState(activeState) {
         const data = {
             score: this.score,
-            stars: this.stars,
+            stars: this.player?.stars || 0,
             lives: this.lives,
             selectedCatIndex: this.selectedCatIndex,
             activeState,
