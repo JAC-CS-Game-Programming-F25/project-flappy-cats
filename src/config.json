@@ -1,6 +1,9 @@
 {
     "images": [
-
+        {
+            "name": "spritesheet",
+            "src": "src/assets/images/spritesheet.png"
+        }
     ],
 
     "fonts": [
