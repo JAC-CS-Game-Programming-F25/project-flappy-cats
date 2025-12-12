@@ -83,6 +83,9 @@ export default class Player extends Entity {
 
 		// Shake effect for hurt state
 		this.shakeOffset = new Vector(0, 0);
+
+		// Balloon stretch animation properties
+		this.stretchScale = 1.0; // Vertical stretch scale (1.0 = normal, >1.0 = stretched)
 	}
 
 	update(dt) {
@@ -102,6 +105,23 @@ export default class Player extends Entity {
 		} else {
 			// Reset float when actively moving
 			this.floatOffset = 0;
+		}
+
+		// Update balloon stretch animation
+		// When rising (negative velocity), stretch vertically to simulate balloon effect
+		if (this.velocity.y < 0 && !this.isDead && !this.isHurt) {
+			// Calculate stretch based on upward velocity
+			// Normalize velocity to 0-1 range (most negative = max stretch)
+			// jumpStrength is negative, so we compare against it
+			const normalizedVelocity = Math.abs(this.velocity.y) / Math.abs(this.jumpStrength);
+			// Stretch from 1.0 (normal) to 1.15 (15% taller) based on velocity
+			this.stretchScale = 1.0 + (normalizedVelocity * 0.15);
+		} else {
+			// Gradually return to normal when not rising
+			this.stretchScale = 1.0 + (this.stretchScale - 1.0) * 0.8; // Decay factor
+			if (Math.abs(this.stretchScale - 1.0) < 0.01) {
+				this.stretchScale = 1.0; // Snap to normal when close enough
+			}
 		}
 
 		// Update animation
@@ -145,20 +165,42 @@ export default class Player extends Entity {
 		const frame = this.currentAnimation.getCurrentFrame();
 
 		context.save();
+		
+		// Calculate base render position with offsets (before any scaling)
+		const baseX = this.position.x + this.shakeOffset.x;
+		const baseY = this.position.y + this.floatOffset + this.shakeOffset.y;
+		
+		// Get frame dimensions
+		const frameWidth = frame.width || this.baseWidth;
+		const frameHeight = frame.height || this.baseHeight;
+		
+		// Calculate center point for scaling (in world coordinates)
+		const centerX = baseX + (frameWidth * this.size) / 2;
+		const centerY = baseY + (frameHeight * this.size) / 2;
+		
+		// Translate to center for scaling operations
+		context.translate(centerX, centerY);
+		
 		// Apply size modifier
 		if (this.size !== 1.0) {
 			context.scale(this.size, this.size);
 		}
+		
+		// Apply balloon stretch (vertical scaling only)
+		if (this.stretchScale !== 1.0) {
+			context.scale(1.0, this.stretchScale);
+		}
+		
+		// Translate back and adjust for frame rendering
+		context.translate(-frameWidth / 2, -frameHeight / 2);
 
 		// Flash if hurt or invincible
 		if ((this.isHurt || this.isInvincible) && Math.floor(Date.now() / 100) % 2 === 0) {
 			context.globalAlpha = 0.5;
 		}
 
-		// Apply float offset for idle floating animation and shake for hurt state
-		const renderX = (this.position.x + this.shakeOffset.x) / this.size;
-		const renderY = (this.position.y + this.floatOffset + this.shakeOffset.y) / this.size;
-		frame.render(renderX, renderY);
+		// Render the frame at origin (0, 0) since we've already translated
+		frame.render(0, 0);
 		context.restore();
 	}
 
