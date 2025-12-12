@@ -13,7 +13,7 @@ import State from '../../lib/State.js';
  *  - Nothing moves while paused (player, pipes, physics, etc.)
  */
 
-import State from '../../lib/State.js';
+
 import GameStateName from '../enums/GameStateName.js';
 import {
 	input,
@@ -88,39 +88,39 @@ export default class PauseState extends State {
 	 * Draws a dark overlay + pause message + countdown (if active)
 	 */
 	render() {
-        // Dark overlay for pause effect
-        context.fillStyle = 'rgba(0, 0, 0, 0.6)';
-        context.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
+		// Dark overlay for pause effect
+		context.fillStyle = 'rgba(0, 0, 0, 0.6)';
+		context.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
 
-        context.textAlign = 'center';
-        context.fillStyle = 'white';
+		context.textAlign = 'center';
+		context.fillStyle = 'white';
 
-        // Pause title
-        context.font = fonts.FlappyLarge;
-        context.fillText(
-            'PAUSED',
-            CANVAS_WIDTH / 2,
-            CANVAS_HEIGHT / 2 - 60
-        );
+		// Pause title
+		context.font = fonts.FlappyLarge;
+		context.fillText(
+			'PAUSED',
+			CANVAS_WIDTH / 2,
+			CANVAS_HEIGHT / 2 - 60
+		);
 
-        // Show resume message (no countdown yet)
-        if (this.countdownValue === null) {
-            context.font = fonts.FlappySmall;
-            context.fillText(
-                'Press SPACE to resume',
-                CANVAS_WIDTH / 2,
-                CANVAS_HEIGHT / 2
-            );
-        } 
-        // Show countdown number (3, 2, 1)
-        else {
-            context.font = fonts.FlappyLarge;
-            context.fillText(
-                String(this.countdownValue),
-                CANVAS_WIDTH / 2,
-                CANVAS_HEIGHT / 2
-            );
-        }
-    }
+		// Show resume message (no countdown yet)
+		if (this.countdownValue === null) {
+			context.font = fonts.FlappySmall;
+			context.fillText(
+				'Press SPACE to resume',
+				CANVAS_WIDTH / 2,
+				CANVAS_HEIGHT / 2
+			);
+		}
+		// Show countdown number (3, 2, 1)
+		else {
+			context.font = fonts.FlappyLarge;
+			context.fillText(
+				String(this.countdownValue),
+				CANVAS_WIDTH / 2,
+				CANVAS_HEIGHT / 2
+			);
+		}
+	}
 
 }

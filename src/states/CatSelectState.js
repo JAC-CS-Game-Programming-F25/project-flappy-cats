@@ -21,6 +21,7 @@ import {
 	CANVAS_WIDTH,
 	CANVAS_HEIGHT,
 	stateMachine,
+	fonts,
 } from '../globals.js';
 
 /**
@@ -98,8 +99,8 @@ export default class CatSelectState extends State {
 		context.fillStyle = 'black';
 
 		// Title text (big + bold)
-		
-		context.font = fonts.FlappyLarge; 
+
+		context.font = fonts.FlappyLarge;
 		context.fillText('Choose Your Cat', CANVAS_WIDTH / 2, 120);
 
 		// Selected cat name (medium emphasis)
