@@ -1,0 +1,138 @@
+import { images, sounds } from '../../globals.js';
+import {
+	loadPlayerSprites,
+	smallSpriteConfig,
+} from '../../../config/SpriteConfig.js';
+import Vector from '../../../lib/Vector.js';
+import ImageName from '../../enums/ImageName.js';
+import Animation from '../../../lib/Animation.js';
+import Entity from '../Entity.js';
+import SoundName from "../../enums/SoundName.js";
+
+export default class Player extends Entity {
+	constructor(x, y, width, height) {
+		super(x, y, width, height);
+
+		this.velocity = new Vector(0, 0);
+		this.gravity = 1500;
+		this.jumpStrength = -400;
+
+		// Cat modifiers
+		this.weight = 1.2; // Heavier than Mario
+		this.size = 1.0;   // Scale factor
+
+		// Stats
+		this.maxHealth = 3;
+		this.health = this.maxHealth;
+		this.stars = 0;
+
+		// Load player sprites
+		this.sprites = loadPlayerSprites(
+			images.get(ImageName.Mario),
+			smallSpriteConfig
+		);
+
+		// Animations
+		this.animations = {
+			idle: new Animation(this.sprites.idle, 0.1),
+			fly: new Animation(this.sprites.jump, 0.1),
+			hurt: new Animation(this.sprites.death, 0.1),
+			fall: new Animation(this.sprites.fall, 0.1)
+		};
+
+		this.currentAnimation = this.animations.idle;
+		this.isDead = false;
+		this.isHurt = false;
+		this.hurtTimer = 0;
+		this.isInvincible = false;
+	}
+
+	update(dt) {
+		if (this.isDead) return;
+
+		// Apply gravity with weight modifier
+		this.velocity.y += this.gravity * this.weight * dt;
+		this.position.y += this.velocity.y * dt;
+
+		// Update animation
+		this.currentAnimation.update(dt);
+
+		// Handle hurt timer
+		if (this.isHurt) {
+			this.hurtTimer -= dt;
+			if (this.hurtTimer <= 0) {
+				this.isHurt = false;
+				this.currentAnimation = this.animations.fly;
+			}
+		} else {
+			// Switch animations based on state
+			if (this.velocity.y < 0) {
+				this.currentAnimation = this.animations.fly;
+			} else {
+				this.currentAnimation = this.animations.fall;
+			}
+		}
+	}
+
+	render(context) {
+		const frame = this.currentAnimation.getCurrentFrame();
+
+		context.save();
+		// Apply size modifier
+		if (this.size !== 1.0) {
+			context.scale(this.size, this.size);
+		}
+
+		// Flash if hurt or invincible
+		if ((this.isHurt || this.isInvincible) && Math.floor(Date.now() / 100) % 2 === 0) {
+			context.globalAlpha = 0.5;
+		}
+
+		frame.render(this.position.x / this.size, this.position.y / this.size);
+		context.restore();
+	}
+
+	flap() {
+		if (this.isDead) return;
+		this.velocity.y = this.jumpStrength;
+		sounds.play(SoundName.Jump);
+		this.currentAnimation = this.animations.fly;
+	}
+
+	die() {
+		if (this.isDead) return;
+		this.isDead = true;
+		sounds.play(SoundName.PlayerDown);
+		this.currentAnimation = this.animations.hurt;
+	}
+
+	takeDamage() {
+		if (this.isHurt || this.isDead || this.isInvincible) return;
+
+		this.health = Math.max(0, this.health - 1);
+
+		if (this.health === 0) {
+			this.die();
+		} else {
+			this.isHurt = true;
+			this.hurtTimer = 1.0; // 1 second invincibility/hurt state
+			this.currentAnimation = this.animations.hurt;
+			sounds.play(SoundName.Bump); // Or some damage sound
+		}
+	}
+
+	heal(amount) {
+		if (this.isDead) return;
+		this.health = Math.min(this.maxHealth, this.health + amount);
+	}
+
+	collectStar() {
+		this.stars++;
+	}
+
+	applyPowerUp(powerUp) {
+		powerUp.apply(this);
+	}
+}
+
+

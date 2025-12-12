@@ -16,6 +16,7 @@ import {
 	context,
 	stateMachine,
 	CANVAS_WIDTH,
+	fonts,
 } from '../globals.js';
 
 export default class PlayState extends State {
@@ -40,7 +41,7 @@ export default class PlayState extends State {
 	 *  - (later) updating player, pipes, collectibles, powerups
 	 */
 	update(dt) {
-		
+
 		// Temporary scoring mechanism: (WILL BE REMOVED LATER)
 		// this.gameController.addScore(dt * 10); // 10 points per second
 
