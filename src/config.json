@@ -2,9 +2,15 @@
     "images": [
         {
             "name": "spritesheet",
-            "src": "src/assets/images/spritesheet.png",
-			"width": 2048,
-			"height": 196
+            "path": "./assets/images/spritesheet.png",
+			"width": 5712,
+			"height": 547
+        },
+        {
+            "name": "lightAndSmallCat",
+            "path": "./assets/images/lightAndSmallCat.png",
+			"width": 490,
+			"height": 587
         },  
         {
             "name": "tiles",

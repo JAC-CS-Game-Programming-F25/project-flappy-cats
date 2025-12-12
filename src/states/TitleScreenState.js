@@ -1,84 +1,140 @@
 /**
- * This is the first screen the player sees when launching the game
+ * First screen shown when the game starts.
+ * Draws:
+ * - Full-screen cloud background
+ * - "Flappy Cat" title 
+ * - START button
  *
- *  - Display game name
- *  - Display high score (if any)
- *  - Listen for SPACE or ENTER to begin
- *  - Navigate to CatSelectState
+ * Starts the game with:
+ * - SPACE / ENTER
+ * - clicking the START button
  */
 
 import State from '../../lib/State.js';
 import GameStateName from '../enums/GameStateName.js';
 import {
+	canvas,
 	context,
-	input,
 	CANVAS_WIDTH,
 	CANVAS_HEIGHT,
+	images,
+	input,
 	stateMachine,
 } from '../globals.js';
+import Sprite from '../../lib/Sprite.js';
 
 export default class TitleScreenState extends State {
-	/**
-	 * @param {GameController} gameController
-	 * We pass one common gameController instance into this state.
-	 * This allows the TitleScreenState to read things such as high score.
-	 */
-	constructor(gameController) {
+	constructor() {
 		super();
-		this.gameController = gameController;
+
+		this.backgroundSprite = null;
+		this.titleSprite = null;
+		this.startButtonSprite = null;
+
+		this.startButtonScale = { x: 0.4, y: 0.4 };
+
+		this.handleCanvasClick = this.handleCanvasClick.bind(this);
 	}
 
-	/**
-	 * update(dt) — runs every frame
-	 * Here we listen to keyboard input and react.
-	 */
-	update(dt) {
-		/**
-		 * input.isKeyPressed():
-		 * used to detect a SINGLE press in that frame.
-		 *
-		 * We check both SPACE and ENTER because either begins the game.
-		 */
-		const userPressedStart =
-			input.isKeyPressed(' ') || input.isKeyPressed('ENTER');
+	enter() {
+		canvas.addEventListener('click', this.handleCanvasClick);
 
-		if (userPressedStart) {
-			/**
-			 * Change to cat select screen.
-			 * We do not reset score or lives here because CatSelectState
-			 * will create a new run.
-			 */
+		const spriteSheet = images.get('spritesheet');
+		if (!spriteSheet) return;
+
+		// Background
+		this.backgroundSprite = new Sprite(spriteSheet, 2898, -12, 584, 357);
+
+		// Title
+		this.titleSprite = new Sprite(spriteSheet, 3499, 28, 640, 179);
+
+		// START button
+		this.startButtonSprite = new Sprite(spriteSheet, 193, 14, 706, 348);
+	}
+
+	exit() {
+		canvas.removeEventListener('click', this.handleCanvasClick);
+	}
+
+	update(dt) {
+		if (!this.startButtonSprite) return;
+
+		if (input.isKeyPressed(' ') || input.isKeyPressed('ENTER')) {
 			stateMachine.change(GameStateName.CatSelect);
 		}
 	}
 
-	/**
-	 * render() — draws UI
-	 * Called every frame after update() to visually show content.
-	 */
 	render() {
-		// Center alignment is ideal for menu screens
-		context.textAlign = 'center';
+	// If sprites are not ready yet, draw nothing
+	if (!this.backgroundSprite || !this.titleSprite || !this.startButtonSprite) {
+		return;
+	}
 
-		// Draw Title
-		context.font = '32px Arial';
-		context.fillStyle = 'black';
-		context.fillText('Flappy Cats', CANVAS_WIDTH / 2, 150);
+	// Clear previous frame so no old color shows behind transparent pixels
+	context.clearRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
 
-		// Draw user prompt
-		context.font = '18px Arial';
-		context.fillText(
-			'Press SPACE or ENTER to start',
-			CANVAS_WIDTH / 2,
-			220
-		);
+	// zoom/crop so no borders show
+	const scale = Math.max(
+		CANVAS_WIDTH / this.backgroundSprite.width,
+		CANVAS_HEIGHT / this.backgroundSprite.height
+	);
 
-		// Draw high score
-		context.font = '16px Arial';
-		context.fillText(
-			'High Score: ' + this.gameController.highScore,
-			CANVAS_WIDTH / 2,
-			260
-        );
+	const bgDrawWidth = this.backgroundSprite.width * scale;
+	const bgDrawHeight = this.backgroundSprite.height * scale;
+
+	const bgX = (CANVAS_WIDTH - bgDrawWidth) / 2;
+	const bgY = (CANVAS_HEIGHT - bgDrawHeight) / 2;
+
+	this.backgroundSprite.render(bgX, bgY, { x: scale, y: scale });
+
+	// Title centered near the top
+	const titleX = (CANVAS_WIDTH - this.titleSprite.width) / 2;
+	const titleY = 60;
+	this.titleSprite.render(titleX, titleY);
+
+	// START button centered near the bottom
+	const startRect = this.getStartButtonRect();
+	this.startButtonSprite.render(
+		startRect.x,
+		startRect.y,
+		this.startButtonScale
+	);
+}
+
+
+
+	getStartButtonRect() {
+		const width = this.startButtonSprite.width * this.startButtonScale.x;
+		const height = this.startButtonSprite.height * this.startButtonScale.y;
+
+		return {
+			x: (CANVAS_WIDTH - width) / 2,
+			y: CANVAS_HEIGHT - 220,
+			width,
+			height,
+		};
+	}
+
+	handleCanvasClick(event) {
+		if (!this.startButtonSprite) return;
+
+		const rect = canvas.getBoundingClientRect();
+		const scaleX = CANVAS_WIDTH / rect.width;
+		const scaleY = CANVAS_HEIGHT / rect.height;
+
+		const mouseX = (event.clientX - rect.left) * scaleX;
+		const mouseY = (event.clientY - rect.top) * scaleY;
+
+		const startRect = this.getStartButtonRect();
+
+		const clickedInside =
+			mouseX >= startRect.x &&
+			mouseX <= startRect.x + startRect.width &&
+			mouseY >= startRect.y &&
+			mouseY <= startRect.y + startRect.height;
+
+		if (clickedInside) {
+			stateMachine.change(GameStateName.CatSelect);
+		}
 	}
 }

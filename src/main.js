@@ -54,14 +54,6 @@ images.load(imageDefinitions);
 fonts.load(fontDefinitions);
 sounds.load(soundDefinitions);
 
-// // Add all the states to the state machine.
-// stateMachine.add(GameStateName.TitleScreen, new TitleScreenState());
-// stateMachine.add(GameStateName.GameOver, new GameOverState());
-// stateMachine.add(GameStateName.Victory, new VictoryState());
-// stateMachine.add(GameStateName.Play, new PlayState());
-
-// stateMachine.change(GameStateName.Play);
-
 // Add all the states to the state machine.
 // We inject the same GameController instance into each state
 // so they all share score, lives, selected cat, persistence, etc.
@@ -75,7 +67,8 @@ stateMachine.add(GameStateName.GameOver, new GameOverState(gameController));    
 // Start in the Restore state.
 // If a save exists, RestoreState will jump to PlayState.
 // If not, it will go to TitleState.
-stateMachine.change(GameStateName.Restore);
+stateMachine.change(GameStateName.Title);
+
 
 
 const game = new Game(
