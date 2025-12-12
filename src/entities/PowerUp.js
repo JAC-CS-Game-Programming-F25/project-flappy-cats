@@ -3,6 +3,7 @@ import Sprite from '../../lib/Sprite.js';
 import { images, sounds } from '../globals.js';
 import ImageName from '../enums/ImageName.js';
 import SoundName from '../enums/SoundName.js';
+import Pipe from './Pipe.js';
 
 export default class PowerUp extends Entity {
     static WIDTH = 16;
@@ -18,7 +19,7 @@ export default class PowerUp extends Entity {
     }
 
     update(dt) {
-        this.position.x -= 100 * dt; // Move with pipes
+        this.position.x -= Pipe.SPEED * dt; // Move with pipes
     }
 
     render(context) {

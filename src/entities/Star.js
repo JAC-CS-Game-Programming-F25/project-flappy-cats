@@ -5,6 +5,7 @@ import { sounds } from '../globals.js';
 import SoundName from '../enums/SoundName.js';
 import { isAABBCollision } from '../../lib/Collision.js';
 import { smallSpriteConfig } from '../../config/SpriteConfig.js';
+import Pipe from './Pipe.js';
 
 export default class Star extends Entity {
     static WIDTH = 16;
@@ -33,7 +34,7 @@ export default class Star extends Entity {
     update(dt) {
         if (this.isCollected) return;
 
-        this.position.x -= 100 * dt; // Move with pipes
+        this.position.x -= Pipe.SPEED * dt; // Move with pipes
 
         // Update sparkle animation
         this.sparkleAnimation.update(dt);

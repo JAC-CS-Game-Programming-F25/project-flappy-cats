@@ -4,6 +4,7 @@ import { images, sounds } from '../globals.js';
 import ImageName from '../enums/ImageName.js';
 import SoundName from '../enums/SoundName.js';
 import { smallSpriteConfig } from '../../config/SpriteConfig.js';
+import Pipe from './Pipe.js';
 
 export default class Heart extends Entity {
     static WIDTH = 16;
@@ -35,7 +36,7 @@ export default class Heart extends Entity {
     update(dt) {
         if (this.isCollected) return;
 
-        this.position.x -= 100 * dt; // Move with pipes
+        this.position.x -= Pipe.SPEED * dt; // Move with pipes
 
         // Update bounce animation
         this.animationTimer += dt;
