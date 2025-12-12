@@ -26,15 +26,29 @@ export default class Heart extends Entity {
         );
 
         this.isCollected = false;
+
+        // Bounce animation properties
+        this.animationTimer = 0;
+        this.bounceOffset = 0;
     }
 
     update(dt) {
+        if (this.isCollected) return;
+
         this.position.x -= 100 * dt; // Move with pipes
+
+        // Update bounce animation
+        this.animationTimer += dt;
+        // Bounce effect: sine wave with amplitude of 3 pixels, period of ~1 second
+        this.bounceOffset = Math.sin(this.animationTimer * Math.PI * 2) * 3;
     }
 
     render(context) {
         if (this.isCollected) return;
-        this.sprite.render(this.position.x, this.position.y);
+        
+        // Apply bounce offset to vertical position
+        const renderY = this.position.y + this.bounceOffset;
+        this.sprite.render(this.position.x, renderY);
     }
 
     collidesWith(player) {

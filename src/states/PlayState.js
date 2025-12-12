@@ -25,6 +25,8 @@ import PipePair from '../entities/PipePair.js';
 import PipeFactory from '../services/PipeFactory.js';
 import Star from '../entities/Star.js';
 import StarFactory from '../services/StarFactory.js';
+import Heart from '../entities/Heart.js';
+import HeartFactory from '../services/HeartFactory.js';
 import ImageName from '../enums/ImageName.js';
 import Input from '../../lib/Input.js';
 
@@ -41,12 +43,16 @@ export default class PlayState extends State {
 		this.player = null;
 		this.pipes = [];
 		this.stars = [];
+		this.hearts = [];
 		this.pipeFactory = new PipeFactory();
 		this.starFactory = new StarFactory();
+		this.heartFactory = new HeartFactory();
 		this.pipeSpawnTimer = 0;
 		this.pipeSpawnInterval = 2.0; // Spawn a pipe every 2 seconds
 		this.starSpawnTimer = 0;
 		this.starSpawnInterval = 3.0; // Spawn a star every 3 seconds
+		this.heartSpawnTimer = 0;
+		this.heartSpawnInterval = 5.0; // Spawn a heart every 5 seconds
 		this.isGameStarted = false;
 	}
 
@@ -77,8 +83,10 @@ export default class PlayState extends State {
 		);
 		this.pipes = [];
 		this.stars = [];
+		this.hearts = [];
 		this.pipeSpawnTimer = 0;
 		this.starSpawnTimer = 0;
+		this.heartSpawnTimer = 0;
 		this.isGameStarted = true;
 
 		// Store player reference in gameController
@@ -146,6 +154,13 @@ export default class PlayState extends State {
 			this.starSpawnTimer = 0;
 		}
 
+		// Spawn hearts
+		this.heartSpawnTimer += dt;
+		if (this.heartSpawnTimer >= this.heartSpawnInterval) {
+			this.hearts.push(this.heartFactory.spawn());
+			this.heartSpawnTimer = 0;
+		}
+
 		// Update stars
 		for (let i = this.stars.length - 1; i >= 0; i--) {
 			const star = this.stars[i];
@@ -161,6 +176,28 @@ export default class PlayState extends State {
 			if (star.collidesWith(this.player)) {
 				star.collect(this.player);
 				this.gameController.addScore(5); // Award points for collecting star
+			}
+		}
+
+		// Update hearts
+		for (let i = this.hearts.length - 1; i >= 0; i--) {
+			const heart = this.hearts[i];
+			heart.update(dt);
+
+			// Remove hearts that are off screen or collected
+			if (heart.isCollected || heart.position.x + heart.dimensions.x < 0) {
+				this.hearts.splice(i, 1);
+				continue;
+			}
+
+			// Check collision with player
+			if (heart.collidesWith(this.player)) {
+				heart.collect(this.player);
+				// Hearts restore health, which may restore a life
+				if (this.player.health > 0 && this.gameController.lives < 3) {
+					// If player was at 0 health but now has health, restore a life
+					// This is handled by the heart's collect method which calls player.heal(1)
+				}
 			}
 		}
 
@@ -239,6 +276,11 @@ export default class PlayState extends State {
 		// Draw stars
 		this.stars.forEach(star => {
 			star.render(context);
+		});
+
+		// Draw hearts
+		this.hearts.forEach(heart => {
+			heart.render(context);
 		});
 
 		// Draw player
