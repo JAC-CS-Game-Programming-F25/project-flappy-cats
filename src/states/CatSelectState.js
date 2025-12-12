@@ -44,20 +44,47 @@ export default class CatSelectState extends State {
 
 		if (!spriteSheet || !lightAndSmallCatSheet) return;
 
+		// Cloud background
 		this.backgroundSprite = new Sprite(spriteSheet, 2898, -12, 584, 357);
 
+		// Sprites
 		const heavyCatSprite = new Sprite(spriteSheet, 4208, 46, 320, 443);
 		const bigCatSprite = new Sprite(spriteSheet, 4625, 17, 406, 478);
-		const lightCatSprite = new Sprite(lightAndSmallCatSheet, 66, 29, 337, 442);
-		const smallCatSprite = new Sprite(lightAndSmallCatSheet, 560, 64, 276, 422);
+
+		// White cat = Light Cat
+		const lightCatSprite = new Sprite(lightAndSmallCatSheet, 560, 64, 276, 422);
+
+		// Orange cat = Small Cat
+		const smallCatSprite = new Sprite(lightAndSmallCatSheet, 66, 29, 337, 442);
+
+		// Shared scale so cats look visually equal
+		const baseScale = 0.32;
 
 		this.cats = [
-			{ name: 'Light Cat', sprite: lightCatSprite, scale: 0.45 },
-			{ name: 'Heavy Cat', sprite: heavyCatSprite, scale: 0.28 },
-			{ name: 'Big Cat', sprite: bigCatSprite, scale: 0.26 },
-			{ name: 'Small Cat', sprite: smallCatSprite, scale: 0.32 },
+			{
+				name: 'Heavy Cat',
+				sprite: heavyCatSprite,
+				scale: baseScale,
+			},
+			{
+				name: 'Light Cat',
+				sprite: lightCatSprite,
+				scale: baseScale,
+			},
+			{
+				name: 'Big Cat',
+				sprite: bigCatSprite,
+				scale: baseScale,
+			},
+			{
+				// Bottom-right, intentionally smaller
+				name: 'Small Cat',
+				sprite: smallCatSprite,
+				scale: 0.25,
+			},
 		];
 	}
+
 
 	update(dt) {
 		if (this.cats.length === 0) return;
