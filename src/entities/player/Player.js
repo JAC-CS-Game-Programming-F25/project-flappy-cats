@@ -80,6 +80,9 @@ export default class Player extends Entity {
 		// Idle float animation properties
 		this.floatTime = 0;
 		this.floatOffset = 0;
+
+		// Shake effect for hurt state
+		this.shakeOffset = new Vector(0, 0);
 	}
 
 	update(dt) {
@@ -104,14 +107,28 @@ export default class Player extends Entity {
 		// Update animation
 		this.currentAnimation.update(dt);
 
-		// Handle hurt timer
+		// Handle hurt timer and shake effect
 		if (this.isHurt) {
 			this.hurtTimer -= dt;
+			
+			// Calculate shake intensity based on remaining hurt time (stronger at start, decays)
+			const shakeIntensity = this.hurtTimer / 1.0; // Normalize to 0-1, decays as timer decreases
+			const maxShake = 3; // Maximum shake distance in pixels
+			
+			// Apply random shake that decays over time
+			this.shakeOffset.x = (Math.random() - 0.5) * 2 * maxShake * shakeIntensity;
+			this.shakeOffset.y = (Math.random() - 0.5) * 2 * maxShake * shakeIntensity;
+			
 			if (this.hurtTimer <= 0) {
 				this.isHurt = false;
+				this.shakeOffset.x = 0;
+				this.shakeOffset.y = 0;
 				this.currentAnimation = this.animations.fly;
 			}
 		} else {
+			// Reset shake when not hurt
+			this.shakeOffset.x = 0;
+			this.shakeOffset.y = 0;
 			// Switch animations based on state
 			if (this.velocity.y < 0) {
 				this.currentAnimation = this.animations.fly;
@@ -138,9 +155,10 @@ export default class Player extends Entity {
 			context.globalAlpha = 0.5;
 		}
 
-		// Apply float offset for idle floating animation
-		const renderY = (this.position.y + this.floatOffset) / this.size;
-		frame.render(this.position.x / this.size, renderY);
+		// Apply float offset for idle floating animation and shake for hurt state
+		const renderX = (this.position.x + this.shakeOffset.x) / this.size;
+		const renderY = (this.position.y + this.floatOffset + this.shakeOffset.y) / this.size;
+		frame.render(renderX, renderY);
 		context.restore();
 	}
 
