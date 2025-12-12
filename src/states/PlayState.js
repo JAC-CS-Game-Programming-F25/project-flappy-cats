@@ -27,6 +27,8 @@ import Star from '../entities/Star.js';
 import StarFactory from '../services/StarFactory.js';
 import Heart from '../entities/Heart.js';
 import HeartFactory from '../services/HeartFactory.js';
+import PowerUp from '../entities/PowerUp.js';
+import PowerUpFactory from '../services/PowerUpFactory.js';
 import ImageName from '../enums/ImageName.js';
 import Input from '../../lib/Input.js';
 
@@ -44,15 +46,19 @@ export default class PlayState extends State {
 		this.pipes = [];
 		this.stars = [];
 		this.hearts = [];
+		this.powerUps = [];
 		this.pipeFactory = new PipeFactory();
 		this.starFactory = new StarFactory();
 		this.heartFactory = new HeartFactory();
+		this.powerUpFactory = new PowerUpFactory();
 		this.pipeSpawnTimer = 0;
 		this.pipeSpawnInterval = 2.0; // Spawn a pipe every 2 seconds
 		this.starSpawnTimer = 0;
 		this.starSpawnInterval = 3.0; // Spawn a star every 3 seconds
 		this.heartSpawnTimer = 0;
 		this.heartSpawnInterval = 5.0; // Spawn a heart every 5 seconds
+		this.powerUpSpawnTimer = 0;
+		this.powerUpSpawnInterval = 8.0; // Spawn a power-up every 8 seconds
 		this.isGameStarted = false;
 	}
 
@@ -84,9 +90,11 @@ export default class PlayState extends State {
 		this.pipes = [];
 		this.stars = [];
 		this.hearts = [];
+		this.powerUps = [];
 		this.pipeSpawnTimer = 0;
 		this.starSpawnTimer = 0;
 		this.heartSpawnTimer = 0;
+		this.powerUpSpawnTimer = 0;
 		this.isGameStarted = true;
 
 		// Store player reference in gameController
@@ -161,6 +169,13 @@ export default class PlayState extends State {
 			this.heartSpawnTimer = 0;
 		}
 
+		// Spawn power-ups
+		this.powerUpSpawnTimer += dt;
+		if (this.powerUpSpawnTimer >= this.powerUpSpawnInterval) {
+			this.powerUps.push(this.powerUpFactory.spawn());
+			this.powerUpSpawnTimer = 0;
+		}
+
 		// Update stars
 		for (let i = this.stars.length - 1; i >= 0; i--) {
 			const star = this.stars[i];
@@ -198,6 +213,24 @@ export default class PlayState extends State {
 					// If player was at 0 health but now has health, restore a life
 					// This is handled by the heart's collect method which calls player.heal(1)
 				}
+			}
+		}
+
+		// Update power-ups
+		for (let i = this.powerUps.length - 1; i >= 0; i--) {
+			const powerUp = this.powerUps[i];
+			powerUp.update(dt);
+
+			// Remove power-ups that are off screen or collected
+			if (powerUp.isCollected || powerUp.position.x + powerUp.dimensions.x < 0) {
+				this.powerUps.splice(i, 1);
+				continue;
+			}
+
+			// Check collision with player
+			if (powerUp.collidesWith(this.player)) {
+				powerUp.collect(this.player);
+				this.gameController.addScore(10); // Award points for collecting power-up
 			}
 		}
 
@@ -281,6 +314,11 @@ export default class PlayState extends State {
 		// Draw hearts
 		this.hearts.forEach(heart => {
 			heart.render(context);
+		});
+
+		// Draw power-ups
+		this.powerUps.forEach(powerUp => {
+			powerUp.render(context);
 		});
 
 		// Draw player
