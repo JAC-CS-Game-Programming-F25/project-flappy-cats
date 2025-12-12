@@ -76,6 +76,10 @@ export default class Player extends Entity {
 		this.isHurt = false;
 		this.hurtTimer = 0;
 		this.isInvincible = false;
+
+		// Idle float animation properties
+		this.floatTime = 0;
+		this.floatOffset = 0;
 	}
 
 	update(dt) {
@@ -84,6 +88,18 @@ export default class Player extends Entity {
 		// Apply gravity with weight modifier
 		this.velocity.y += this.gravity * this.weight * dt;
 		this.position.y += this.velocity.y * dt;
+
+		// Update idle float animation
+		// When velocity is relatively small (near hovering), apply gentle float
+		const isIdle = Math.abs(this.velocity.y) < 50; // Consider idle when moving slowly
+		if (isIdle && !this.isHurt && !this.isDead) {
+			this.floatTime += dt;
+			// Gentle sine wave oscillation: amplitude of 2 pixels, period of ~2 seconds
+			this.floatOffset = Math.sin(this.floatTime * Math.PI) * 2;
+		} else {
+			// Reset float when actively moving
+			this.floatOffset = 0;
+		}
 
 		// Update animation
 		this.currentAnimation.update(dt);
@@ -99,6 +115,9 @@ export default class Player extends Entity {
 			// Switch animations based on state
 			if (this.velocity.y < 0) {
 				this.currentAnimation = this.animations.fly;
+			} else if (isIdle) {
+				// Use idle animation when floating gently
+				this.currentAnimation = this.animations.idle;
 			} else {
 				this.currentAnimation = this.animations.fall;
 			}
@@ -119,7 +138,9 @@ export default class Player extends Entity {
 			context.globalAlpha = 0.5;
 		}
 
-		frame.render(this.position.x / this.size, this.position.y / this.size);
+		// Apply float offset for idle floating animation
+		const renderY = (this.position.y + this.floatOffset) / this.size;
+		frame.render(this.position.x / this.size, renderY);
 		context.restore();
 	}
 
