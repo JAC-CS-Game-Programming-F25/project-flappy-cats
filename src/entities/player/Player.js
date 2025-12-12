@@ -86,6 +86,10 @@ export default class Player extends Entity {
 
 		// Balloon stretch animation properties
 		this.stretchScale = 1.0; // Vertical stretch scale (1.0 = normal, >1.0 = stretched)
+
+		// PowerUp tracking
+		this.activePowerUp = null; // Currently active power-up (or null if none)
+		this.powerUpTimer = 0; // Remaining time for active power-up in seconds
 	}
 
 	update(dt) {
