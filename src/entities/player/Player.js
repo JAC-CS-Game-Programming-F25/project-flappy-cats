@@ -8,19 +8,22 @@ import ImageName from '../../enums/ImageName.js';
 import Animation from '../../../lib/Animation.js';
 import Entity from '../Entity.js';
 import SoundName from "../../enums/SoundName.js";
+import Sprite from '../../../lib/Sprite.js';
 
 export default class Player extends Entity {
 	/**
 	 * Returns cat configuration based on cat index.
+	 * Note: The order matches CatSelectState's cat array:
+	 * Index 0: Heavy Cat, Index 1: Light Cat, Index 2: Big Cat, Index 3: Small Cat
 	 * @param {number} catIndex - Index of selected cat (0-3)
 	 * @returns {Object} Configuration with weight, size, and jumpStrength
 	 */
 	static getCatConfig(catIndex) {
 		const configs = [
-			// Index 0: Light Cat - rises faster, easier to float but harder to control
-			{ weight: 0.8, size: 1.0, jumpStrength: -450 },
-			// Index 1: Heavy Cat - falls faster, harder to keep up but more stable
+			// Index 0: Heavy Cat - falls faster, harder to keep up but more stable
 			{ weight: 1.5, size: 1.0, jumpStrength: -350 },
+			// Index 1: Light Cat - rises faster, easier to float but harder to control
+			{ weight: 0.8, size: 1.0, jumpStrength: -450 },
 			// Index 2: Big Cat - larger hitbox makes the game more challenging
 			{ weight: 1.2, size: 1.3, jumpStrength: -400 },
 			// Index 3: Small Cat - smaller hitbox, slightly easier to fit through gaps
@@ -29,6 +32,37 @@ export default class Player extends Entity {
 
 		// Default to first cat if index is out of range
 		return configs[catIndex] || configs[0];
+	}
+
+	/**
+	 * Loads the cat sprite based on the selected cat index.
+	 * Uses the same sprite coordinates as CatSelectState.
+	 * @param {number} catIndex - Index of selected cat (0-3)
+	 * @returns {Sprite} The cat sprite for the selected cat
+	 */
+	static loadCatSprite(catIndex) {
+		const spriteSheet = images.get(ImageName.SpriteSheet);
+		const lightAndSmallCatSheet = images.get(ImageName.LightAndSmallCat);
+
+		if (!spriteSheet || !lightAndSmallCatSheet) {
+			// Fallback to a default sprite if images aren't loaded
+			return null;
+		}
+
+		// Cat sprite configurations matching CatSelectState's order
+		const catSprites = [
+			// Index 0: Heavy Cat - from spritesheet
+			new Sprite(spriteSheet, 4208, 46, 320, 443),
+			// Index 1: Light Cat - from lightAndSmallCat sheet
+			new Sprite(lightAndSmallCatSheet, 560, 64, 276, 422),
+			// Index 2: Big Cat - from spritesheet
+			new Sprite(spriteSheet, 4625, 17, 406, 478),
+			// Index 3: Small Cat - from lightAndSmallCat sheet
+			new Sprite(lightAndSmallCatSheet, 66, 29, 337, 442),
+		];
+
+		// Return the sprite for the selected cat, or first one as fallback
+		return catSprites[catIndex] || catSprites[0];
 	}
 
 	constructor(x, y, width, height, catIndex = 0) {
@@ -57,18 +91,27 @@ export default class Player extends Entity {
 		this.health = this.maxHealth;
 		this.stars = 0;
 
-		// Load player sprites
+		// Store cat index for sprite loading
+		this.catIndex = catIndex;
+
+		// Load cat sprite based on selected cat
+		// This uses the same sprites as CatSelectState
+		this.catSprite = Player.loadCatSprite(catIndex);
+
+		// Load player sprites (fallback for animations if needed)
 		this.sprites = loadPlayerSprites(
 			images.get(ImageName.Mario),
 			smallSpriteConfig
 		);
 
-		// Animations
+		// Animations (using cat sprite as single frame for now)
+		// Create animations from the cat sprite for different states
+		const catSpriteFrame = [this.catSprite]; // Single frame animation
 		this.animations = {
-			idle: new Animation(this.sprites.idle, 0.1),
-			fly: new Animation(this.sprites.jump, 0.1),
-			hurt: new Animation(this.sprites.death, 0.1),
-			fall: new Animation(this.sprites.fall, 0.1)
+			idle: new Animation(catSpriteFrame, 0.1),
+			fly: new Animation(catSpriteFrame, 0.1),
+			hurt: new Animation(catSpriteFrame, 0.1),
+			fall: new Animation(catSpriteFrame, 0.1)
 		};
 
 		this.currentAnimation = this.animations.idle;
@@ -169,45 +212,80 @@ export default class Player extends Entity {
 	}
 
 	render(context) {
-		const frame = this.currentAnimation.getCurrentFrame();
-
 		context.save();
 		
 		// Calculate base render position with offsets (before any scaling)
 		const baseX = this.position.x + this.shakeOffset.x;
 		const baseY = this.position.y + this.floatOffset + this.shakeOffset.y;
 		
-		// Get frame dimensions
-		const frameWidth = frame.width || this.baseWidth;
-		const frameHeight = frame.height || this.baseHeight;
-		
-		// Calculate center point for scaling (in world coordinates)
-		const centerX = baseX + (frameWidth * this.size) / 2;
-		const centerY = baseY + (frameHeight * this.size) / 2;
-		
-		// Translate to center for scaling operations
-		context.translate(centerX, centerY);
-		
-		// Apply size modifier
-		if (this.size !== 1.0) {
-			context.scale(this.size, this.size);
-		}
-		
-		// Apply balloon stretch (vertical scaling only)
-		if (this.stretchScale !== 1.0) {
-			context.scale(1.0, this.stretchScale);
-		}
-		
-		// Translate back and adjust for frame rendering
-		context.translate(-frameWidth / 2, -frameHeight / 2);
-
 		// Flash if hurt or invincible
 		if ((this.isHurt || this.isInvincible) && Math.floor(Date.now() / 100) % 2 === 0) {
 			context.globalAlpha = 0.5;
 		}
 
-		// Render the frame at origin (0, 0) since we've already translated
-		frame.render(0, 0);
+		if (this.catSprite) {
+			// Render cat sprite - these are large sprites that need to be scaled down
+			// Cat sprites are much larger (300-400px) than base player size (16x32)
+			// Scale them down to fit the game scale
+			const catScale = 0.08; // Scale factor to make cat sprites game-appropriate size
+			const scaledWidth = this.catSprite.width * catScale * this.size;
+			const scaledHeight = this.catSprite.height * catScale * this.size;
+			
+			// Apply balloon stretch to height only
+			const finalHeight = scaledHeight * this.stretchScale;
+			
+			// Calculate center point for rendering
+			const centerX = baseX + scaledWidth / 2;
+			const centerY = baseY + finalHeight / 2;
+			
+			// Translate to center
+			context.translate(centerX, centerY);
+			
+			// Apply balloon stretch (vertical scaling only)
+			if (this.stretchScale !== 1.0) {
+				context.scale(1.0, this.stretchScale);
+			}
+			
+			// Translate back
+			context.translate(-scaledWidth / 2, -scaledHeight / 2);
+			
+			// Render the cat sprite with appropriate scale
+			this.catSprite.render(0, 0, { 
+				x: catScale * this.size, 
+				y: catScale * this.size 
+			});
+		} else {
+			// Fallback to animation frame (original Mario sprites)
+			const frame = this.currentAnimation.getCurrentFrame();
+			
+			// Get frame dimensions
+			const frameWidth = frame.width || this.baseWidth;
+			const frameHeight = frame.height || this.baseHeight;
+			
+			// Calculate center point for scaling (in world coordinates)
+			const centerX = baseX + (frameWidth * this.size) / 2;
+			const centerY = baseY + (frameHeight * this.size) / 2;
+			
+			// Translate to center for scaling operations
+			context.translate(centerX, centerY);
+			
+			// Apply size modifier
+			if (this.size !== 1.0) {
+				context.scale(this.size, this.size);
+			}
+			
+			// Apply balloon stretch (vertical scaling only)
+			if (this.stretchScale !== 1.0) {
+				context.scale(1.0, this.stretchScale);
+			}
+			
+			// Translate back and adjust for frame rendering
+			context.translate(-frameWidth / 2, -frameHeight / 2);
+			
+			// Render the frame at origin (0, 0) since we've already translated
+			frame.render(0, 0);
+		}
+		
 		context.restore();
 	}
 
