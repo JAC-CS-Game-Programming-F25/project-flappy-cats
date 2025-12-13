@@ -249,17 +249,41 @@ export default class Player extends Entity {
 		this.stars++;
 	}
 
+	/**
+	 * POLYMORPHISM: This method demonstrates polymorphism by accepting any
+	 * PowerUp subclass instance (InvinciblePowerUp, SlowPowerUp, or future
+	 * power-up types) and treating them all the same through the PowerUp
+	 * interface. The method calls powerUp.apply(this) without knowing
+	 * the specific subclass type. JavaScript's dynamic dispatch ensures
+	 * the correct subclass implementation is called at runtime.
+	 * 
+	 * This is a key example of polymorphism in action:
+	 * - The parameter type is PowerUp (the base class)
+	 * - But it can accept InvinciblePowerUp or SlowPowerUp instances
+	 * - When powerUp.apply() is called, the correct subclass method executes
+	 * 
+	 * @param {PowerUp} powerUp - Any PowerUp subclass instance (polymorphic parameter)
+	 */
 	applyPowerUp(powerUp) {
 		// Store the power-up and set timer
 		this.activePowerUp = powerUp;
 		this.powerUpTimer = powerUp.duration;
 		
-		// Apply the power-up effect immediately
+		// POLYMORPHISM: Call apply() method - the correct subclass implementation
+		// (InvinciblePowerUp.apply() or SlowPowerUp.apply()) will be called
+		// based on the actual object type at runtime, not the declared type.
 		powerUp.apply(this);
 	}
 
 	/**
 	 * Updates the active power-up timer and removes it when expired.
+	 * 
+	 * POLYMORPHISM: This method demonstrates polymorphism by calling
+	 * powerUp.remove(this) on the stored activePowerUp. Even though
+	 * activePowerUp is typed as PowerUp, it could be an InvinciblePowerUp
+	 * or SlowPowerUp instance. The correct remove() implementation is
+	 * called based on the actual object type at runtime.
+	 * 
 	 * @param {number} dt - Delta time in seconds
 	 */
 	updatePowerUp(dt) {
@@ -268,7 +292,10 @@ export default class Player extends Entity {
 			
 			// When timer expires, remove the power-up effect
 			if (this.powerUpTimer <= 0) {
-				// Call remove() method if it exists (will be implemented in PowerUp subclasses)
+				// POLYMORPHISM: Call remove() method if it exists.
+				// The correct subclass implementation (InvinciblePowerUp.remove()
+				// or SlowPowerUp.remove()) will be called based on the actual
+				// object type. This is runtime polymorphism in action.
 				if (this.activePowerUp.remove) {
 					this.activePowerUp.remove(this);
 				}
