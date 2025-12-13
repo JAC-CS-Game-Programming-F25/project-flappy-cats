@@ -136,6 +136,9 @@ export default class Player extends Entity {
 		this.jumpRotation = 0; // Rotation angle for jump animation (in radians)
 		this.jumpBounceScale = 1.0; // Scale bounce effect during jump
 
+		// Invincibility glow animation properties
+		this.glowTime = 0; // Timer for pulsing glow effect
+
 		// PowerUp tracking
 		this.activePowerUp = null; // Currently active power-up (or null if none)
 		this.powerUpTimer = 0; // Remaining time for active power-up in seconds
@@ -195,6 +198,13 @@ export default class Player extends Entity {
 			this.jumpBounceScale = 1.0; // Normal scale when not jumping
 		}
 
+		// Update invincibility glow animation
+		if (this.isInvincible) {
+			this.glowTime += dt * 3; // Accumulate time for pulsing glow (3x speed for faster pulse)
+		} else {
+			this.glowTime = 0; // Reset glow timer when not invincible
+		}
+
 		// Update power-up timer
 		this.updatePowerUp(dt);
 
@@ -239,8 +249,8 @@ export default class Player extends Entity {
 		const baseX = this.position.x + this.shakeOffset.x;
 		const baseY = this.position.y + this.floatOffset + this.shakeOffset.y;
 		
-		// Flash if hurt or invincible
-		if ((this.isHurt || this.isInvincible) && Math.floor(Date.now() / 100) % 2 === 0) {
+		// Flash if hurt (but not invincible - invincible uses glow instead)
+		if (this.isHurt && !this.isInvincible && Math.floor(Date.now() / 100) % 2 === 0) {
 			context.globalAlpha = 0.5;
 		}
 
@@ -280,11 +290,33 @@ export default class Player extends Entity {
 			// Translate back
 			context.translate(-scaledWidth / 2, -scaledHeight / 2); // Move origin back for rendering
 			
+			// Apply invincibility glow effect
+			if (this.isInvincible) {
+				// Calculate pulsing glow intensity (0.4 to 1.0)
+				const glowIntensity = 0.4 + (Math.sin(this.glowTime) * 0.6); // Pulsing effect
+				const glowBlur = 8 + (Math.sin(this.glowTime) * 4); // Glow blur pulses between 4-12px
+				
+				// Set up shadow for glow effect (golden/yellow glow)
+				context.shadowColor = `rgba(255, 215, 0, ${glowIntensity})`; // Golden glow color with pulsing opacity
+				context.shadowBlur = glowBlur; // Glow blur size that pulses
+				context.shadowOffsetX = 0; // No horizontal offset
+				context.shadowOffsetY = 0; // No vertical offset
+			}
+			
 			// Render the cat sprite with appropriate scale
+			// Shadow effect will be applied if invincible
 			this.catSprite.render(0, 0, { 
 				x: catScale * this.size, // Horizontal scale with cat size modifier
 				y: catScale * this.size  // Vertical scale with cat size modifier
 			});
+			
+			// Reset shadow effects after rendering
+			if (this.isInvincible) {
+				context.shadowColor = 'transparent'; // Clear shadow
+				context.shadowBlur = 0; // Reset blur
+				context.shadowOffsetX = 0; // Reset horizontal offset
+				context.shadowOffsetY = 0; // Reset vertical offset
+			}
 		} else {
 			// Fallback to animation frame (original Mario sprites)
 			const frame = this.currentAnimation.getCurrentFrame();
