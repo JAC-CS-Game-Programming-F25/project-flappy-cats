@@ -110,8 +110,8 @@ export default class CatSelectState extends State {
 		const confirmed = input.isKeyPressed(' ') || input.isKeyPressed('ENTER');
 
 		if (confirmed) {
-			this.gameController.setSelectedCat(this.selectedIndex);
-			this.gameController.resetAndCreateNewSession();
+			this.gameController.setSelectedCat(this.selectedIndex); // Set selected cat first
+			this.gameController.resetAndCreateNewSession(); // Reset game state (but preserve selectedCatIndex)
 			stateMachine.change(GameStateName.Play);
 		}
 	}

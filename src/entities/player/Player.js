@@ -130,6 +130,12 @@ export default class Player extends Entity {
 		// Balloon stretch animation properties
 		this.stretchScale = 1.0; // Vertical stretch scale (1.0 = normal, >1.0 = stretched)
 
+		// Jump animation properties
+		this.jumpAnimationTimer = 0; // Timer for jump animation
+		this.jumpAnimationDuration = 0.3; // Duration of jump animation in seconds
+		this.jumpRotation = 0; // Rotation angle for jump animation (in radians)
+		this.jumpBounceScale = 1.0; // Scale bounce effect during jump
+
 		// PowerUp tracking
 		this.activePowerUp = null; // Currently active power-up (or null if none)
 		this.powerUpTimer = 0; // Remaining time for active power-up in seconds
@@ -173,6 +179,21 @@ export default class Player extends Entity {
 
 		// Update animation
 		this.currentAnimation.update(dt);
+
+		// Update jump animation
+		if (this.jumpAnimationTimer > 0) {
+			this.jumpAnimationTimer -= dt; // Decrease jump animation timer
+			// Calculate animation progress (1.0 at start, 0.0 at end)
+			const progress = this.jumpAnimationTimer / this.jumpAnimationDuration;
+			// Rotation: slight tilt upward when jumping (max 15 degrees = ~0.26 radians)
+			this.jumpRotation = Math.sin(progress * Math.PI) * 0.26; // Sine wave for smooth animation
+			// Bounce scale: slight scale up during jump (1.0 to 1.1)
+			this.jumpBounceScale = 1.0 + (Math.sin(progress * Math.PI) * 0.1); // Scale bounce effect
+		} else {
+			// Reset jump animation values when timer expires
+			this.jumpRotation = 0; // No rotation when not jumping
+			this.jumpBounceScale = 1.0; // Normal scale when not jumping
+		}
 
 		// Update power-up timer
 		this.updatePowerUp(dt);
@@ -241,6 +262,16 @@ export default class Player extends Entity {
 			// Translate to center
 			context.translate(centerX, centerY); // Move origin to sprite center
 			
+			// Apply jump rotation (tilt effect when jumping)
+			if (this.jumpRotation !== 0) {
+				context.rotate(this.jumpRotation); // Rotate sprite for jump animation
+			}
+			
+			// Apply jump bounce scale (slight size increase during jump)
+			if (this.jumpBounceScale !== 1.0) {
+				context.scale(this.jumpBounceScale, this.jumpBounceScale); // Scale up during jump
+			}
+			
 			// Apply balloon stretch (vertical scaling only)
 			if (this.stretchScale !== 1.0) {
 				context.scale(1.0, this.stretchScale); // Stretch vertically when rising
@@ -294,6 +325,7 @@ export default class Player extends Entity {
 		this.velocity.y = this.jumpStrength; // Apply upward force (negative value)
 		sounds.play(SoundName.Jump); // Play jump sound effect
 		this.currentAnimation = this.animations.fly; // Switch to flying animation
+		this.jumpAnimationTimer = this.jumpAnimationDuration; // Start jump animation
 	}
 
 	die() {

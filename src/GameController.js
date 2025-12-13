@@ -7,10 +7,13 @@ export default class GameController {
     }
 
     resetAndCreateNewSession() {
+        // Preserve selectedCatIndex if it's already been set (don't reset to 0)
+        const preservedCatIndex = this.selectedCatIndex !== undefined ? this.selectedCatIndex : 0;
+        
         this.score = 0;
         //this.stars = 0;
         this.lives = 3;
-        this.selectedCatIndex = 0;
+        this.selectedCatIndex = preservedCatIndex; // Preserve selected cat index
         this.highScore = Number(localStorage.getItem(HIGH_SCORE_KEY) || 0);
 
         this.player = null;
