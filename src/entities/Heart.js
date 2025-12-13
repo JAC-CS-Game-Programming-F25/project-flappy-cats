@@ -34,12 +34,12 @@ export default class Heart extends Entity {
     }
 
     update(dt) {
-        if (this.isCollected) return;
+        if (this.isCollected) return; // Don't update if already collected
 
-        this.position.x -= Pipe.SPEED * dt; // Move with pipes
+        this.position.x -= Pipe.SPEED * dt; // Move left with pipes to stay synchronized
 
         // Update bounce animation
-        this.animationTimer += dt;
+        this.animationTimer += dt; // Accumulate time for animation
         // Bounce effect: sine wave with amplitude of 3 pixels, period of ~1 second
         this.bounceOffset = Math.sin(this.animationTimer * Math.PI * 2) * 3;
     }
@@ -58,8 +58,8 @@ export default class Heart extends Entity {
     }
 
     collect(player) {
-        this.isCollected = true;
-        sounds.play(SoundName.Powerup);
-        player.heal(1);
+        this.isCollected = true; // Mark as collected to prevent double collection
+        sounds.play(SoundName.Powerup); // Play collection sound effect
+        player.heal(1); // Restore 1 health point to player
     }
 }

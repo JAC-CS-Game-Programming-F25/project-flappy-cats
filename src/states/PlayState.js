@@ -74,10 +74,10 @@ export default class PlayState extends State {
 	 */
 	initializeGame() {
 		// Initialize player at center-left of screen
-		const playerWidth = 16;
-		const playerHeight = 32;
-		const playerX = CANVAS_WIDTH * 0.2;
-		const playerY = CANVAS_HEIGHT / 2;
+		const playerWidth = 16; // Base player width
+		const playerHeight = 32; // Base player height
+		const playerX = CANVAS_WIDTH * 0.2; // Position at 20% from left edge
+		const playerY = CANVAS_HEIGHT / 2; // Position at vertical center
 
 		// Create player with selected cat from GameController
 		this.player = new Player(
@@ -85,20 +85,20 @@ export default class PlayState extends State {
 			playerY, 
 			playerWidth, 
 			playerHeight,
-			this.gameController.selectedCatIndex
+			this.gameController.selectedCatIndex // Use selected cat index
 		);
-		this.pipes = [];
-		this.stars = [];
-		this.hearts = [];
-		this.powerUps = [];
-		this.pipeSpawnTimer = 0;
-		this.starSpawnTimer = 0;
-		this.heartSpawnTimer = 0;
-		this.powerUpSpawnTimer = 0;
-		this.isGameStarted = true;
+		this.pipes = []; // Initialize empty pipe array
+		this.stars = []; // Initialize empty star array
+		this.hearts = []; // Initialize empty heart array
+		this.powerUps = []; // Initialize empty power-up array
+		this.pipeSpawnTimer = 0; // Reset pipe spawn timer
+		this.starSpawnTimer = 0; // Reset star spawn timer
+		this.heartSpawnTimer = 0; // Reset heart spawn timer
+		this.powerUpSpawnTimer = 0; // Reset power-up spawn timer
+		this.isGameStarted = true; // Mark game as started
 
 		// Store player reference in gameController
-		this.gameController.player = this.player;
+		this.gameController.player = this.player; // Allow GameController to access player
 	}
 
 	/**
@@ -125,11 +125,11 @@ export default class PlayState extends State {
 		// Handle player input (jump/flap)
 		if (input.isKeyPressed(Input.KEYS.SPACE) || 
 		    input.isKeyPressed(Input.KEYS.ARROW_UP)) {
-			this.player.flap();
+			this.player.flap(); // Apply upward force when space or up arrow is pressed
 		}
 
 		// Update player
-		this.player.update(dt);
+		this.player.update(dt); // Update player position, animations, and power-ups
 
 		// Keep player within screen bounds
 		if (this.player.position.y < 0) {
@@ -149,65 +149,65 @@ export default class PlayState extends State {
 		}
 
 		// Spawn pipes
-		this.pipeSpawnTimer += dt;
+		this.pipeSpawnTimer += dt; // Accumulate time since last pipe spawn
 		if (this.pipeSpawnTimer >= this.pipeSpawnInterval) {
-			this.pipes.push(this.pipeFactory.spawn());
-			this.pipeSpawnTimer = 0;
+			this.pipes.push(this.pipeFactory.spawn()); // Create new pipe pair and add to array
+			this.pipeSpawnTimer = 0; // Reset timer for next spawn
 		}
 
 		// Spawn stars
-		this.starSpawnTimer += dt;
+		this.starSpawnTimer += dt; // Accumulate time since last star spawn
 		if (this.starSpawnTimer >= this.starSpawnInterval) {
-			this.stars.push(this.starFactory.spawn());
-			this.starSpawnTimer = 0;
+			this.stars.push(this.starFactory.spawn()); // Create new star and add to array
+			this.starSpawnTimer = 0; // Reset timer for next spawn
 		}
 
 		// Spawn hearts
-		this.heartSpawnTimer += dt;
+		this.heartSpawnTimer += dt; // Accumulate time since last heart spawn
 		if (this.heartSpawnTimer >= this.heartSpawnInterval) {
-			this.hearts.push(this.heartFactory.spawn());
-			this.heartSpawnTimer = 0;
+			this.hearts.push(this.heartFactory.spawn()); // Create new heart and add to array
+			this.heartSpawnTimer = 0; // Reset timer for next spawn
 		}
 
 		// Spawn power-ups
-		this.powerUpSpawnTimer += dt;
+		this.powerUpSpawnTimer += dt; // Accumulate time since last power-up spawn
 		if (this.powerUpSpawnTimer >= this.powerUpSpawnInterval) {
-			this.powerUps.push(this.powerUpFactory.spawn());
-			this.powerUpSpawnTimer = 0;
+			this.powerUps.push(this.powerUpFactory.spawn()); // Create new power-up and add to array
+			this.powerUpSpawnTimer = 0; // Reset timer for next spawn
 		}
 
 		// Update stars
-		for (let i = this.stars.length - 1; i >= 0; i--) {
+		for (let i = this.stars.length - 1; i >= 0; i--) { // Iterate backwards to safely remove items
 			const star = this.stars[i];
-			star.update(dt);
+			star.update(dt); // Update star position and animation
 
 			// Remove stars that are off screen or collected
 			if (star.isCollected || star.position.x + star.dimensions.x < 0) {
-				this.stars.splice(i, 1);
+				this.stars.splice(i, 1); // Remove from array if off-screen or collected
 				continue;
 			}
 
 			// Check collision with player
 			if (star.collidesWith(this.player)) {
-				star.collect(this.player);
+				star.collect(this.player); // Trigger collection logic
 				this.gameController.addScore(5); // Award points for collecting star
 			}
 		}
 
 		// Update hearts
-		for (let i = this.hearts.length - 1; i >= 0; i--) {
+		for (let i = this.hearts.length - 1; i >= 0; i--) { // Iterate backwards to safely remove items
 			const heart = this.hearts[i];
-			heart.update(dt);
+			heart.update(dt); // Update heart position and bounce animation
 
 			// Remove hearts that are off screen or collected
 			if (heart.isCollected || heart.position.x + heart.dimensions.x < 0) {
-				this.hearts.splice(i, 1);
+				this.hearts.splice(i, 1); // Remove from array if off-screen or collected
 				continue;
 			}
 
 			// Check collision with player
 			if (heart.collidesWith(this.player)) {
-				heart.collect(this.player);
+				heart.collect(this.player); // Trigger collection logic and heal player
 				// Hearts restore health, which may restore a life
 				if (this.player.health > 0 && this.gameController.lives < 3) {
 					// If player was at 0 health but now has health, restore a life
@@ -217,40 +217,40 @@ export default class PlayState extends State {
 		}
 
 		// Update power-ups
-		for (let i = this.powerUps.length - 1; i >= 0; i--) {
+		for (let i = this.powerUps.length - 1; i >= 0; i--) { // Iterate backwards to safely remove items
 			const powerUp = this.powerUps[i];
-			powerUp.update(dt);
+			powerUp.update(dt); // Update power-up position
 
 			// Remove power-ups that are off screen or collected
 			if (powerUp.isCollected || powerUp.position.x + powerUp.dimensions.x < 0) {
-				this.powerUps.splice(i, 1);
+				this.powerUps.splice(i, 1); // Remove from array if off-screen or collected
 				continue;
 			}
 
 			// Check collision with player
 			if (powerUp.collidesWith(this.player)) {
-				powerUp.collect(this.player);
+				powerUp.collect(this.player); // Trigger collection and apply power-up effect
 				this.gameController.addScore(10); // Award points for collecting power-up
 			}
 		}
 
 		// Update pipes
-		for (let i = this.pipes.length - 1; i >= 0; i--) {
+		for (let i = this.pipes.length - 1; i >= 0; i--) { // Iterate backwards to safely remove items
 			const pipePair = this.pipes[i];
-			pipePair.update(dt);
+			pipePair.update(dt); // Update pipe position
 
 			// Remove pipes that are off screen
 			if (pipePair.isDead) {
-				this.pipes.splice(i, 1);
+				this.pipes.splice(i, 1); // Remove from array if off-screen
 				continue;
 			}
 
 			// Check collision with player
 			if (pipePair.collidesWith(this.player)) {
 				if (!this.player.isDead && !this.player.isHurt) {
-					this.player.takeDamage();
+					this.player.takeDamage(); // Apply damage to player
 					if (this.player.health <= 0) {
-						this.gameController.loseLife();
+						this.gameController.loseLife(); // Lose a life if health reaches 0
 					}
 				}
 			}
@@ -258,8 +258,8 @@ export default class PlayState extends State {
 			// Check if player passed the pipe (scoring)
 			if (!pipePair.isPassed && 
 			    pipePair.position.x + pipePair.dimensions.x < this.player.position.x) {
-				pipePair.isPassed = true;
-				this.gameController.addScore(10);
+				pipePair.isPassed = true; // Mark as passed to prevent double scoring
+				this.gameController.addScore(10); // Award points for passing pipe
 			}
 		}
 

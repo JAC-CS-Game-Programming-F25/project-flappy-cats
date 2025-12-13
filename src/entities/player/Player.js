@@ -136,22 +136,22 @@ export default class Player extends Entity {
 	}
 
 	update(dt) {
-		if (this.isDead) return;
+		if (this.isDead) return; // Don't update if player is dead
 
 		// Apply gravity with weight modifier
-		this.velocity.y += this.gravity * this.weight * dt;
-		this.position.y += this.velocity.y * dt;
+		this.velocity.y += this.gravity * this.weight * dt; // Heavier cats fall faster
+		this.position.y += this.velocity.y * dt; // Update position based on velocity
 
 		// Update idle float animation
 		// When velocity is relatively small (near hovering), apply gentle float
 		const isIdle = Math.abs(this.velocity.y) < 50; // Consider idle when moving slowly
 		if (isIdle && !this.isHurt && !this.isDead) {
-			this.floatTime += dt;
+			this.floatTime += dt; // Accumulate time for float animation
 			// Gentle sine wave oscillation: amplitude of 2 pixels, period of ~2 seconds
-			this.floatOffset = Math.sin(this.floatTime * Math.PI) * 2;
+			this.floatOffset = Math.sin(this.floatTime * Math.PI) * 2; // Vertical float offset
 		} else {
 			// Reset float when actively moving
-			this.floatOffset = 0;
+			this.floatOffset = 0; // No float offset when moving
 		}
 
 		// Update balloon stretch animation
@@ -162,12 +162,12 @@ export default class Player extends Entity {
 			// jumpStrength is negative, so we compare against it
 			const normalizedVelocity = Math.abs(this.velocity.y) / Math.abs(this.jumpStrength);
 			// Stretch from 1.0 (normal) to 1.15 (15% taller) based on velocity
-			this.stretchScale = 1.0 + (normalizedVelocity * 0.15);
+			this.stretchScale = 1.0 + (normalizedVelocity * 0.15); // Apply stretch based on upward speed
 		} else {
 			// Gradually return to normal when not rising
-			this.stretchScale = 1.0 + (this.stretchScale - 1.0) * 0.8; // Decay factor
+			this.stretchScale = 1.0 + (this.stretchScale - 1.0) * 0.8; // Decay factor (smooth return)
 			if (Math.abs(this.stretchScale - 1.0) < 0.01) {
-				this.stretchScale = 1.0; // Snap to normal when close enough
+				this.stretchScale = 1.0; // Snap to normal when close enough to avoid floating point issues
 			}
 		}
 
@@ -179,34 +179,34 @@ export default class Player extends Entity {
 
 		// Handle hurt timer and shake effect
 		if (this.isHurt) {
-			this.hurtTimer -= dt;
+			this.hurtTimer -= dt; // Decrease hurt timer
 			
 			// Calculate shake intensity based on remaining hurt time (stronger at start, decays)
 			const shakeIntensity = this.hurtTimer / 1.0; // Normalize to 0-1, decays as timer decreases
 			const maxShake = 3; // Maximum shake distance in pixels
 			
 			// Apply random shake that decays over time
-			this.shakeOffset.x = (Math.random() - 0.5) * 2 * maxShake * shakeIntensity;
-			this.shakeOffset.y = (Math.random() - 0.5) * 2 * maxShake * shakeIntensity;
+			this.shakeOffset.x = (Math.random() - 0.5) * 2 * maxShake * shakeIntensity; // Random horizontal shake
+			this.shakeOffset.y = (Math.random() - 0.5) * 2 * maxShake * shakeIntensity; // Random vertical shake
 			
 			if (this.hurtTimer <= 0) {
-				this.isHurt = false;
-				this.shakeOffset.x = 0;
-				this.shakeOffset.y = 0;
-				this.currentAnimation = this.animations.fly;
+				this.isHurt = false; // End hurt state
+				this.shakeOffset.x = 0; // Reset shake offset
+				this.shakeOffset.y = 0; // Reset shake offset
+				this.currentAnimation = this.animations.fly; // Return to flying animation
 			}
 		} else {
 			// Reset shake when not hurt
-			this.shakeOffset.x = 0;
-			this.shakeOffset.y = 0;
+			this.shakeOffset.x = 0; // No horizontal shake
+			this.shakeOffset.y = 0; // No vertical shake
 			// Switch animations based on state
 			if (this.velocity.y < 0) {
-				this.currentAnimation = this.animations.fly;
+				this.currentAnimation = this.animations.fly; // Use flying animation when rising
 			} else if (isIdle) {
 				// Use idle animation when floating gently
-				this.currentAnimation = this.animations.idle;
+				this.currentAnimation = this.animations.idle; // Use idle animation when hovering
 			} else {
-				this.currentAnimation = this.animations.fall;
+				this.currentAnimation = this.animations.fall; // Use falling animation when descending
 			}
 		}
 	}
@@ -228,31 +228,31 @@ export default class Player extends Entity {
 			// Cat sprites are much larger (300-400px) than base player size (16x32)
 			// Scale them down to fit the game scale
 			const catScale = 0.08; // Scale factor to make cat sprites game-appropriate size
-			const scaledWidth = this.catSprite.width * catScale * this.size;
-			const scaledHeight = this.catSprite.height * catScale * this.size;
+			const scaledWidth = this.catSprite.width * catScale * this.size; // Apply cat size modifier
+			const scaledHeight = this.catSprite.height * catScale * this.size; // Apply cat size modifier
 			
 			// Apply balloon stretch to height only
-			const finalHeight = scaledHeight * this.stretchScale;
+			const finalHeight = scaledHeight * this.stretchScale; // Calculate final height with stretch
 			
 			// Calculate center point for rendering
-			const centerX = baseX + scaledWidth / 2;
-			const centerY = baseY + finalHeight / 2;
+			const centerX = baseX + scaledWidth / 2; // Horizontal center
+			const centerY = baseY + finalHeight / 2; // Vertical center
 			
 			// Translate to center
-			context.translate(centerX, centerY);
+			context.translate(centerX, centerY); // Move origin to sprite center
 			
 			// Apply balloon stretch (vertical scaling only)
 			if (this.stretchScale !== 1.0) {
-				context.scale(1.0, this.stretchScale);
+				context.scale(1.0, this.stretchScale); // Stretch vertically when rising
 			}
 			
 			// Translate back
-			context.translate(-scaledWidth / 2, -scaledHeight / 2);
+			context.translate(-scaledWidth / 2, -scaledHeight / 2); // Move origin back for rendering
 			
 			// Render the cat sprite with appropriate scale
 			this.catSprite.render(0, 0, { 
-				x: catScale * this.size, 
-				y: catScale * this.size 
+				x: catScale * this.size, // Horizontal scale with cat size modifier
+				y: catScale * this.size  // Vertical scale with cat size modifier
 			});
 		} else {
 			// Fallback to animation frame (original Mario sprites)
@@ -290,10 +290,10 @@ export default class Player extends Entity {
 	}
 
 	flap() {
-		if (this.isDead) return;
-		this.velocity.y = this.jumpStrength;
-		sounds.play(SoundName.Jump);
-		this.currentAnimation = this.animations.fly;
+		if (this.isDead) return; // Don't flap if dead
+		this.velocity.y = this.jumpStrength; // Apply upward force (negative value)
+		sounds.play(SoundName.Jump); // Play jump sound effect
+		this.currentAnimation = this.animations.fly; // Switch to flying animation
 	}
 
 	die() {
@@ -344,13 +344,13 @@ export default class Player extends Entity {
 	 */
 	applyPowerUp(powerUp) {
 		// Store the power-up and set timer
-		this.activePowerUp = powerUp;
-		this.powerUpTimer = powerUp.duration;
+		this.activePowerUp = powerUp; // Store reference to active power-up
+		this.powerUpTimer = powerUp.duration; // Set timer to power-up duration (5 seconds)
 		
 		// POLYMORPHISM: Call apply() method - the correct subclass implementation
 		// (InvinciblePowerUp.apply() or SlowPowerUp.apply()) will be called
 		// based on the actual object type at runtime, not the declared type.
-		powerUp.apply(this);
+		powerUp.apply(this); // Apply power-up effect to player
 	}
 
 	/**
@@ -366,7 +366,7 @@ export default class Player extends Entity {
 	 */
 	updatePowerUp(dt) {
 		if (this.activePowerUp && this.powerUpTimer > 0) {
-			this.powerUpTimer -= dt;
+			this.powerUpTimer -= dt; // Decrease timer by delta time
 			
 			// When timer expires, remove the power-up effect
 			if (this.powerUpTimer <= 0) {
@@ -375,10 +375,10 @@ export default class Player extends Entity {
 				// or SlowPowerUp.remove()) will be called based on the actual
 				// object type. This is runtime polymorphism in action.
 				if (this.activePowerUp.remove) {
-					this.activePowerUp.remove(this);
+					this.activePowerUp.remove(this); // Remove power-up effect
 				}
-				this.activePowerUp = null;
-				this.powerUpTimer = 0;
+				this.activePowerUp = null; // Clear active power-up reference
+				this.powerUpTimer = 0; // Reset timer
 			}
 		}
 	}

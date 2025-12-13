@@ -14,7 +14,7 @@ export default class Star extends Entity {
     constructor(x, y, spriteSheet) {
         super(x, y, Star.WIDTH, Star.HEIGHT);
 
-        this.isCollected = false;
+        this.isCollected = false; // Track if star has been collected by player
 
         // Create sparkle animation from all sparkle frames
         const sparkleSprites = smallSpriteConfig.sparkles.map(frame =>
@@ -32,9 +32,9 @@ export default class Star extends Entity {
     }
 
     update(dt) {
-        if (this.isCollected) return;
+        if (this.isCollected) return; // Don't update if already collected
 
-        this.position.x -= Pipe.SPEED * dt; // Move with pipes
+        this.position.x -= Pipe.SPEED * dt; // Move left with pipes to stay synchronized
 
         // Update sparkle animation
         this.sparkleAnimation.update(dt);
@@ -50,9 +50,9 @@ export default class Star extends Entity {
 
     collect(player) {
         if (!this.isCollected) {
-            this.isCollected = true;
-            sounds.play(SoundName.Coin);
-            player.collectStar();
+            this.isCollected = true; // Mark as collected to prevent double collection
+            sounds.play(SoundName.Coin); // Play collection sound effect
+            player.collectStar(); // Increment player's star count
         }
     }
 

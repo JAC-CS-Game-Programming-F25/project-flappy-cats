@@ -40,28 +40,28 @@ export default class GameController {
 
     saveGameState(activeState) {
         const data = {
-            score: this.score,
-            stars: this.player?.stars || 0,
-            lives: this.lives,
-            selectedCatIndex: this.selectedCatIndex,
-            activeState,
-            timestamp: Date.now()
+            score: this.score, // Current game score
+            stars: this.player?.stars || 0, // Player's collected stars (from player object)
+            lives: this.lives, // Remaining lives
+            selectedCatIndex: this.selectedCatIndex, // Which cat was selected
+            activeState, // Current game state (Play, Pause, GameOver)
+            timestamp: Date.now() // When the game was saved
         };
-        localStorage.setItem(SAVE_KEY, JSON.stringify(data));
+        localStorage.setItem(SAVE_KEY, JSON.stringify(data)); // Save to browser storage
     }
 
     loadGameState() {
-        const raw = localStorage.getItem(SAVE_KEY);
-        if (!raw) return null;
-        return JSON.parse(raw);
+        const raw = localStorage.getItem(SAVE_KEY); // Get saved data from browser storage
+        if (!raw) return null; // Return null if no save exists
+        return JSON.parse(raw); // Parse JSON string back to object
     }
 
     restoreFromData(data) {
-        this.score = data.score;
+        this.score = data.score; // Restore saved score
         // this.stars = data.stars;
         // this.lives = data.lives;
-        this.selectedCatIndex = data.selectedCatIndex;
-        this.addScore(0); // refresh high score UI
+        this.selectedCatIndex = data.selectedCatIndex; // Restore selected cat
+        this.addScore(0); // Refresh high score UI without changing score
     }
 
     clearGameState() {
