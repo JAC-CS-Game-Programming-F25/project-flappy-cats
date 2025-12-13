@@ -31,6 +31,8 @@ import PowerUp from '../entities/PowerUp.js';
 import PowerUpFactory from '../services/PowerUpFactory.js';
 import ImageName from '../enums/ImageName.js';
 import Input from '../../lib/Input.js';
+import SlowPowerUp from '../entities/SlowPowerUp.js';
+import Pipe from '../entities/Pipe.js';
 
 export default class PlayState extends State {
 	/**
@@ -131,6 +133,12 @@ export default class PlayState extends State {
 		// Update player
 		this.player.update(dt); // Update player position, animations, and power-ups
 
+		// Check if slow motion is active (SlowPowerUp reduces Pipe.SPEED to half)
+		const isSlowMotion = SlowPowerUp.originalSpeed !== null && 
+		                      Pipe.SPEED < SlowPowerUp.originalSpeed;
+		// Adjust delta time for spawn timers during slow motion
+		const spawnDt = isSlowMotion ? dt * (Pipe.SPEED / SlowPowerUp.originalSpeed) : dt;
+
 		// Keep player within screen bounds
 		if (this.player.position.y < 0) {
 			this.player.position.y = 0;
@@ -149,28 +157,28 @@ export default class PlayState extends State {
 		}
 
 		// Spawn pipes
-		this.pipeSpawnTimer += dt; // Accumulate time since last pipe spawn
+		this.pipeSpawnTimer += spawnDt; // Accumulate time since last pipe spawn (slowed during slow motion)
 		if (this.pipeSpawnTimer >= this.pipeSpawnInterval) {
 			this.pipes.push(this.pipeFactory.spawn()); // Create new pipe pair and add to array
 			this.pipeSpawnTimer = 0; // Reset timer for next spawn
 		}
 
 		// Spawn stars
-		this.starSpawnTimer += dt; // Accumulate time since last star spawn
+		this.starSpawnTimer += spawnDt; // Accumulate time since last star spawn (slowed during slow motion)
 		if (this.starSpawnTimer >= this.starSpawnInterval) {
 			this.stars.push(this.starFactory.spawn()); // Create new star and add to array
 			this.starSpawnTimer = 0; // Reset timer for next spawn
 		}
 
 		// Spawn hearts
-		this.heartSpawnTimer += dt; // Accumulate time since last heart spawn
+		this.heartSpawnTimer += spawnDt; // Accumulate time since last heart spawn (slowed during slow motion)
 		if (this.heartSpawnTimer >= this.heartSpawnInterval) {
 			this.hearts.push(this.heartFactory.spawn()); // Create new heart and add to array
 			this.heartSpawnTimer = 0; // Reset timer for next spawn
 		}
 
 		// Spawn power-ups
-		this.powerUpSpawnTimer += dt; // Accumulate time since last power-up spawn
+		this.powerUpSpawnTimer += spawnDt; // Accumulate time since last power-up spawn (slowed during slow motion)
 		if (this.powerUpSpawnTimer >= this.powerUpSpawnInterval) {
 			this.powerUps.push(this.powerUpFactory.spawn()); // Create new power-up and add to array
 			this.powerUpSpawnTimer = 0; // Reset timer for next spawn
