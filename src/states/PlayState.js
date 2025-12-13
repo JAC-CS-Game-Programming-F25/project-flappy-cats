@@ -334,6 +334,26 @@ export default class PlayState extends State {
 			this.player.render(context);
 		}
 
+		// Apply slow-motion shader effect if active
+		const isSlowMotion = SlowPowerUp.originalSpeed !== null && 
+		                      Pipe.SPEED < SlowPowerUp.originalSpeed;
+		if (isSlowMotion) {
+			// Create slow-motion visual effect: blue/cyan tint overlay to indicate slow motion
+			context.save();
+			context.globalCompositeOperation = 'screen'; // Screen blend mode for brighter tint
+			context.fillStyle = 'rgba(150, 200, 255, 0.25)'; // Cyan/blue tint overlay (25% opacity)
+			context.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT); // Cover entire screen
+			context.restore();
+			
+			// Add desaturation effect using overlay blend
+			context.save();
+			context.globalCompositeOperation = 'overlay'; // Overlay blend for desaturation
+			context.globalAlpha = 0.15; // Subtle desaturation
+			context.fillStyle = 'rgba(128, 128, 128, 0.5)'; // Gray overlay for desaturation
+			context.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT); // Cover entire screen
+			context.restore();
+		}
+
 		// Draw HUD
 		// Left-aligned HUD text
 		context.textAlign = 'left';
