@@ -101,6 +101,9 @@ export default class PlayState extends State {
 
 		// Store player reference in gameController
 		this.gameController.player = this.player; // Allow GameController to access player
+		
+		// Sync lives with player health (they represent the same thing)
+		this.gameController.lives = this.player.health; // Ensure lives match player health
 	}
 
 	/**
@@ -132,6 +135,11 @@ export default class PlayState extends State {
 
 		// Update player
 		this.player.update(dt); // Update player position, animations, and power-ups
+		
+		// Sync lives with player health (they represent the same thing in this game)
+		if (this.player) {
+			this.gameController.lives = this.player.health; // Keep lives in sync with player health
+		}
 
 		// Check if slow motion is active (SlowPowerUp reduces Pipe.SPEED to half)
 		const isSlowMotion = SlowPowerUp.originalSpeed !== null && 
@@ -148,11 +156,9 @@ export default class PlayState extends State {
 			this.player.position.y = CANVAS_HEIGHT - this.player.dimensions.y;
 			this.player.velocity.y = 0;
 			// Player hit the ground - take damage
-			if (!this.player.isDead) {
-				this.player.takeDamage();
-				if (this.player.health <= 0) {
-					this.gameController.loseLife();
-				}
+			if (!this.player.isDead && !this.player.isHurt) {
+				this.player.takeDamage(); // Apply damage to player (decreases health)
+				// Lives are synced with health in the update loop, so no need to manually update here
 			}
 		}
 
@@ -215,12 +221,8 @@ export default class PlayState extends State {
 
 			// Check collision with player
 			if (heart.collidesWith(this.player)) {
-				heart.collect(this.player); // Trigger collection logic and heal player
-				// Hearts restore health, which may restore a life
-				if (this.player.health > 0 && this.gameController.lives < 3) {
-					// If player was at 0 health but now has health, restore a life
-					// This is handled by the heart's collect method which calls player.heal(1)
-				}
+				heart.collect(this.player); // Trigger collection logic and heal player (restores 1 health)
+				// Lives are synced with health in the update loop, so healing automatically restores a life
 			}
 		}
 
@@ -256,10 +258,8 @@ export default class PlayState extends State {
 			// Check collision with player
 			if (pipePair.collidesWith(this.player)) {
 				if (!this.player.isDead && !this.player.isHurt) {
-					this.player.takeDamage(); // Apply damage to player
-					if (this.player.health <= 0) {
-						this.gameController.loseLife(); // Lose a life if health reaches 0
-					}
+					this.player.takeDamage(); // Apply damage to player (decreases health)
+					// Lives are synced with health in the update loop, so no need to manually update here
 				}
 			}
 
@@ -374,14 +374,15 @@ export default class PlayState extends State {
 			30
 		);
 
-		// Lives
+		// Lives - display player health (synced with gameController.lives in update loop)
+		const displayLives = this.player ? this.player.health : this.gameController.lives;
 		context.strokeText(
-			'Lives: ' + this.gameController.lives,
+			'Lives: ' + displayLives,
 			10,
 			55
 		);
 		context.fillText(
-			'Lives: ' + this.gameController.lives,
+			'Lives: ' + displayLives,
 			10,
 			55
 		);
