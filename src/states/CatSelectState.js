@@ -112,6 +112,11 @@ export default class CatSelectState extends State {
 		if (confirmed) {
 			this.gameController.setSelectedCat(this.selectedIndex); // Set selected cat first
 			this.gameController.resetAndCreateNewSession(); // Reset game state (but preserve selectedCatIndex)
+			// Reset the game started flag so PlayState will reinitialize
+			const playState = stateMachine.states[GameStateName.Play];
+			if (playState) {
+				playState.isGameStarted = false;
+			}
 			stateMachine.change(GameStateName.Play);
 		}
 	}

@@ -33,10 +33,7 @@ export default class GameOverState extends State {
 	 * - Clears persistent game data in localStorage
 	 */
 	enter() {
-		if (this.gameController.updateHighScore) {
-			// this.gameController.updateHighScore();
-		}
-
+		// Clear saved game state so next run starts fresh
 		if (this.gameController.clearGameState) {
 			this.gameController.clearGameState();
 		}
@@ -51,32 +48,56 @@ export default class GameOverState extends State {
 	update(dt) {
 		// ENTER -> Retry with same cat
 		if (input.isKeyPressed('ENTER')) {
-			if (this.gameController.startNewRun) {
-				this.gameController.startNewRun();
+			// Reset game state and restart
+			this.gameController.resetAndCreateNewSession();
+			// Reset the game started flag so PlayState will reinitialize
+			const playState = stateMachine.states[GameStateName.Play];
+			if (playState) {
+				playState.isGameStarted = false;
 			}
 			stateMachine.change(GameStateName.Play);
 		}
 
 		// C -> Back to cat selection
 		if (input.isKeyPressed('C')) {
-			if (this.gameController.resetAndCreateNewSession) {
-				this.gameController.resetAndCreateNewSession();
-			}
+			// Reset game state
+			this.gameController.resetAndCreateNewSession();
 			stateMachine.change(GameStateName.CatSelect);
 		}
 	}
 
 	/**
 	 * Draws the entire Game Over UI:
-	 *  - Dark overlay background
-	 *  - Large "GAME OVER" title
-	 *  - Final score + high score
+	 *  - Game screen in background
+	 *  - Dark overlay
+	 *  - Game Over box with stats
 	 *  - Options for retrying or returning to menu
 	 */
 	render() {
+		// First, render the game state in the background so it's visible
+		const playState = stateMachine.states[GameStateName.Play];
+		if (playState) {
+			playState.render();
+		}
+
 		// Dark overlay
-		context.fillStyle = 'rgba(0, 0, 0, 0.7)';
+		context.fillStyle = 'rgba(0, 0, 0, 0.6)';
 		context.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
+
+		// Draw game over box
+		const boxWidth = 350;
+		const boxHeight = 310; // Increased height to fit stars
+		const boxX = (CANVAS_WIDTH - boxWidth) / 2;
+		const boxY = (CANVAS_HEIGHT - boxHeight) / 2;
+
+		// Box background
+		context.fillStyle = 'rgba(40, 40, 40, 0.95)';
+		context.fillRect(boxX, boxY, boxWidth, boxHeight);
+
+		// Box border
+		context.strokeStyle = 'white';
+		context.lineWidth = 3;
+		context.strokeRect(boxX, boxY, boxWidth, boxHeight);
 
 		context.textAlign = 'center';
 		context.fillStyle = 'white';
@@ -84,38 +105,59 @@ export default class GameOverState extends State {
 		// Game Over title
 		context.font = fonts.FlappyLarge;
 		context.fillText(
-			'GAME OVER',
+			'GAME OVER!',
 			CANVAS_WIDTH / 2,
-			CANVAS_HEIGHT / 2 - 80
+			boxY + 40
 		);
 
-		// Score + High Score
-		context.font = fonts.FlappyMedium;
-		context.fillText(
-			'Score: ' + Math.floor(this.gameController.score),
-			CANVAS_WIDTH / 2,
-			CANVAS_HEIGHT / 2 - 30
-		);
-
-		// HIGH SCORE
-		context.fillText(
-			'High Score: ' + this.gameController.highScore,
-			CANVAS_WIDTH / 2,
-			CANVAS_HEIGHT / 2
-		);
-
-		// Options (Retry or Return to Menu)
+		// "Here is your stats:" text
 		context.font = fonts.FlappySmall;
 		context.fillText(
-			'Press ENTER to Retry',
+			'Here is your stats:',
 			CANVAS_WIDTH / 2,
-			CANVAS_HEIGHT / 2 + 50
+			boxY + 75
+		);
+
+		// Stats section
+		const statsY = boxY + 110;
+		const lineHeight = 30;
+
+		// Current Score
+		context.font = fonts.FlappyMedium;
+		context.fillText(
+			`Current Score: ${Math.floor(this.gameController.score)}`,
+			CANVAS_WIDTH / 2,
+			statsY
+		);
+
+		// High Score
+		context.fillText(
+			`High Score: ${this.gameController.highScore}`,
+			CANVAS_WIDTH / 2,
+			statsY + lineHeight
+		);
+
+		// Stars collected (from player if available)
+		const stars = this.gameController.player?.stars || 0;
+		context.fillText(
+			`Stars Collected: ${stars}`,
+			CANVAS_WIDTH / 2,
+			statsY + lineHeight * 2
+		);
+
+		// Options section
+		const optionsY = statsY + lineHeight * 3 + 20;
+		context.font = fonts.FlappySmall;
+		context.fillText(
+			'Press ENTER to Restart',
+			CANVAS_WIDTH / 2,
+			optionsY
 		);
 
 		context.fillText(
-			'Press C to Choose Cat (Main Menu)',
+			'Press C to Choose Cat',
 			CANVAS_WIDTH / 2,
-			CANVAS_HEIGHT / 2 + 80
+			optionsY + 25
 		);
 	}
 }

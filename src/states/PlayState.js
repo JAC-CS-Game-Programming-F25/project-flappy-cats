@@ -123,12 +123,16 @@ export default class PlayState extends State {
 	 *  - Game-over detection
 	 */
 	update(dt) {
-		if (!this.player || this.player.isDead) {
-			// Game over - player is dead
-			if (this.gameController.isGameOver()) {
-				this.gameController.saveGameState(GameStateName.GameOver);
-				stateMachine.change(GameStateName.GameOver);
-			}
+		// Sync lives with player health first (they represent the same thing in this game)
+		if (this.player) {
+			this.gameController.lives = this.player.health; // Keep lives in sync with player health
+		}
+
+		// Check for game over condition (player dead or no lives)
+		if (!this.player || this.player.isDead || this.player.health <= 0 || this.gameController.isGameOver()) {
+			// Game over - transition to GameOverState
+			this.gameController.saveGameState(GameStateName.GameOver);
+			stateMachine.change(GameStateName.GameOver);
 			return;
 		}
 
@@ -142,6 +146,7 @@ export default class PlayState extends State {
 		this.player.update(dt); // Update player position, animations, and power-ups
 		
 		// Sync lives with player health (they represent the same thing in this game)
+		// Note: We also sync at the beginning of update to catch death immediately
 		if (this.player) {
 			this.gameController.lives = this.player.health; // Keep lives in sync with player health
 		}
@@ -287,15 +292,6 @@ export default class PlayState extends State {
 			this.gameController.saveGameState(GameStateName.Play);
 			stateMachine.change(GameStateName.Pause);
 			return; // Stop updating gameplay during same frame
-		}
-
-		/**
-		 * Game Over condition:
-		 * If lives reach zero, transition to GameOverState.
-		 */
-		if (this.gameController.isGameOver()) {
-			this.gameController.saveGameState(GameStateName.GameOver);
-			stateMachine.change(GameStateName.GameOver);
 		}
 	}
 
