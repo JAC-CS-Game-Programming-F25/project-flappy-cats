@@ -37,6 +37,11 @@ export default class InvinciblePowerUp extends PowerUp {
     
     static SHIELD_SCALE = 24 / 684;  // Scale factor
 
+    /**
+     * Creates a new InvinciblePowerUp at the specified position.
+     * @param {number} x - X position (typically canvas.width for spawning)
+     * @param {number} y - Y position (random vertical position)
+     */
     constructor(x, y) {
         // INHERITANCE: Call parent constructor using super() to initialize
         // PowerUp properties (which in turn initializes Entity properties)

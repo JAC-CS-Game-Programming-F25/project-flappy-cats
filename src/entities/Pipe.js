@@ -4,6 +4,10 @@ import ImageName from '../enums/ImageName.js';
 import Sprite from '../../lib/Sprite.js';
 import Player from './player/Player.js';
 
+/**
+ * Pipe entity - represents a single pipe (top or bottom) in a pipe pair.
+ * Pipes are rendered using tiled sprites from the PowerPipes spritesheet.
+ */
 export default class Pipe extends Entity {
     static WIDTH = 32;   // Pipe width in game 
     static SPEED = 100;
@@ -37,11 +41,17 @@ export default class Pipe extends Entity {
     static MIDDLE_SEGMENT_WIDTH = 260;    // Width: 2202 - 1942 = 260
     static MIDDLE_SEGMENT_HEIGHT = 265;   // Height: reduced by 5px to crop bottom edge and remove visible line
 
+    /**
+     * Creates a new Pipe entity.
+     * @param {number} x - X position of the pipe
+     * @param {number} y - Y position: for top pipe, this is the bottom of the pipe; for bottom pipe, this is the top
+     * @param {boolean} isTop - True if this is a top pipe, false if bottom pipe
+     */
     constructor(x, y, isTop) {
         // If top, y is the bottom of the top pipe
         // If bottom, y is the top of the bottom pipe
         super(x, y, Pipe.WIDTH, Pipe.IMAGE_HEIGHT);
-        this.isTop = isTop;
+        this.isTop = isTop; // Store whether this is a top or bottom pipe
 
         // Get the PowerPipes spritesheet image
         const pipeSheet = images.get(ImageName.PowerPipes);
@@ -89,10 +99,20 @@ export default class Pipe extends Entity {
         ) : null;
     }
 
+    /**
+     * Updates the pipe (position is managed by PipePair).
+     * @param {number} dt - Delta time in seconds
+     */
     update(dt) {
         // Position updated by PipePair
     }
 
+    /**
+     * Renders the pipe using tiled sprites.
+     * Top pipes extend from top of screen down to gap.
+     * Bottom pipes extend from gap down to bottom of screen.
+     * @param {CanvasRenderingContext2D} context - The canvas rendering context
+     */
     render(context) {
         // If sprites aren't loaded, don't render
         if (!this.topCapSprite || !this.middleSegmentSprite || !this.topPipeCapSprite || !this.bottomCapSprite) {
@@ -172,6 +192,12 @@ export default class Pipe extends Entity {
         context.restore();
     }
 
+    /**
+     * Checks if this pipe collides with the given entity (AABB collision detection).
+     * Only collides with Player entities.
+     * @param {Entity} entity - The entity to check collision with
+     * @returns {boolean} True if collision detected, false otherwise
+     */
     collidesWith(entity) {
         // Only collide with Player, not with collectibles or other entities
         if (!(entity instanceof Player)) return false;
