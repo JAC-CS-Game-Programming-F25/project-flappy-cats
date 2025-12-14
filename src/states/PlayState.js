@@ -66,9 +66,14 @@ export default class PlayState extends State {
 
 	/**
 	 * Called when entering this state.
+	 * Only initialize if the game hasn't been started yet.
 	 */
 	enter() {
-		this.initializeGame();
+		// Only initialize if the game hasn't been started yet
+		// This prevents resetting the game when resuming from pause
+		if (!this.isGameStarted) {
+			this.initializeGame();
+		}
 	}
 
 	/**
