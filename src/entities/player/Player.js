@@ -173,7 +173,7 @@ export default class Player extends Entity {
 			// jumpStrength is negative, so we compare against it
 			const normalizedVelocity = Math.abs(this.velocity.y) / Math.abs(this.jumpStrength);
 			// Stretch from 1.0 (normal) to 1.15 (15% taller) based on velocity
-			this.stretchScale = 1.0 + (normalizedVelocity * 0.15); // Apply stretch based on upward speed
+			this.stretchScale = 1.0 + (normalizedVelocity * 0.67); // Apply stretch based on upward speed
 		} else {
 			// Gradually return to normal when not rising
 			this.stretchScale = 1.0 + (this.stretchScale - 1.0) * 0.8; // Decay factor (smooth return)
