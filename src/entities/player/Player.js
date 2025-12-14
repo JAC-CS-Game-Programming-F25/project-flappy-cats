@@ -200,7 +200,7 @@ export default class Player extends Entity {
 
 		// Update invincibility glow animation
 		if (this.isInvincible) {
-			this.glowTime += dt * 3; // Accumulate time for pulsing glow (3x speed for faster pulse)
+			this.glowTime += dt * 4; // Accumulate time for pulsing glow (4x speed for faster, more noticeable pulse)
 		} else {
 			this.glowTime = 0; // Reset glow timer when not invincible
 		}
@@ -290,15 +290,19 @@ export default class Player extends Entity {
 			// Translate back
 			context.translate(-scaledWidth / 2, -scaledHeight / 2); // Move origin back for rendering
 			
-			// Apply invincibility glow effect
+			// Apply invincibility glow effect (dramatic pulsing glow)
 			if (this.isInvincible) {
-				// Calculate pulsing glow intensity (0.4 to 1.0)
-				const glowIntensity = 0.4 + (Math.sin(this.glowTime) * 0.6); // Pulsing effect
-				const glowBlur = 8 + (Math.sin(this.glowTime) * 4); // Glow blur pulses between 4-12px
+				// Use a faster sine wave for more noticeable pulsing
+				// Calculate pulsing glow intensity (0.7 to 1.0 for very strong visibility)
+				const glowIntensity = 0.7 + (Math.sin(this.glowTime * 2) * 0.3); // Faster pulse, very strong base
+				// Calculate pulsing blur size (very dramatic range: 25-60px for huge visible glow)
+				const glowBlur = 25 + (Math.sin(this.glowTime * 2) * 35); // Glow blur pulses between 25-60px
+				// Use a vibrant golden/yellow color for better visibility
+				const glowColor = `rgba(255, 215, 50, ${glowIntensity})`; // Bright golden glow with pulsing opacity
 				
 				// Set up shadow for glow effect (golden/yellow glow)
-				context.shadowColor = `rgba(255, 215, 0, ${glowIntensity})`; // Golden glow color with pulsing opacity
-				context.shadowBlur = glowBlur; // Glow blur size that pulses
+				context.shadowColor = glowColor; // Vibrant golden glow color with pulsing opacity
+				context.shadowBlur = glowBlur; // Glow blur size that pulses dramatically (very large)
 				context.shadowOffsetX = 0; // No horizontal offset
 				context.shadowOffsetY = 0; // No vertical offset
 			}
@@ -342,11 +346,32 @@ export default class Player extends Entity {
 				context.scale(1.0, this.stretchScale);
 			}
 			
+			// Apply invincibility glow effect for fallback animation
+			if (this.isInvincible) {
+				// Use a faster sine wave for more noticeable pulsing
+				const glowIntensity = 0.7 + (Math.sin(this.glowTime * 2) * 0.3); // Faster pulse, very strong base
+				const glowBlur = 25 + (Math.sin(this.glowTime * 2) * 35); // Glow blur pulses between 25-60px
+				const glowColor = `rgba(255, 215, 50, ${glowIntensity})`; // Bright golden glow with pulsing opacity
+				
+				context.shadowColor = glowColor;
+				context.shadowBlur = glowBlur;
+				context.shadowOffsetX = 0;
+				context.shadowOffsetY = 0;
+			}
+			
 			// Translate back and adjust for frame rendering
 			context.translate(-frameWidth / 2, -frameHeight / 2);
 			
 			// Render the frame at origin (0, 0) since we've already translated
 			frame.render(0, 0);
+			
+			// Reset shadow effects after rendering
+			if (this.isInvincible) {
+				context.shadowColor = 'transparent';
+				context.shadowBlur = 0;
+				context.shadowOffsetX = 0;
+				context.shadowOffsetY = 0;
+			}
 		}
 		
 		context.restore();

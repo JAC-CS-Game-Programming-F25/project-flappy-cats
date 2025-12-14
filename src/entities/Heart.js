@@ -6,6 +6,10 @@ import SoundName from '../enums/SoundName.js';
 import Pipe from './Pipe.js';
 import Player from './player/Player.js';
 
+/**
+ * Heart collectible entity - restores player health when collected.
+ * Hearts have a bounce animation and move across the screen.
+ */
 export default class Heart extends Entity {
     static HEART_SPRITESHEET_X = 5500;    // X coordinate
     static HEART_SPRITESHEET_Y = 5;       // Y coordinate
@@ -18,6 +22,11 @@ export default class Heart extends Entity {
     // Scale factor to shrink the heart sprite from spritesheet to game size
     static HEART_SCALE = 32 / 200;  // Scale factor: 32/200 = 0.16 (updated for new width)
 
+    /**
+     * Creates a new Heart collectible at the specified position.
+     * @param {number} x - X position (typically canvas.width for spawning)
+     * @param {number} y - Y position (random vertical position)
+     */
     constructor(x, y) {
         super(x, y, Heart.WIDTH, Heart.HEIGHT);
 
@@ -40,6 +49,10 @@ export default class Heart extends Entity {
         this.bounceOffset = 0;
     }
 
+    /**
+     * Updates the heart's position and bounce animation.
+     * @param {number} dt - Delta time in seconds
+     */
     update(dt) {
         if (this.isCollected) return; // Don't update if already collected
 
@@ -51,6 +64,10 @@ export default class Heart extends Entity {
         this.bounceOffset = Math.sin(this.animationTimer * Math.PI * 2) * 3;
     }
 
+    /**
+     * Renders the heart sprite with bounce animation.
+     * @param {CanvasRenderingContext2D} context - The canvas rendering context
+     */
     render(context) {
         if (this.isCollected || !this.sprite) return;
         
@@ -64,6 +81,12 @@ export default class Heart extends Entity {
         });
     }
 
+    /**
+     * Checks if this heart collides with the given entity (AABB collision detection).
+     * Only collides with Player entities.
+     * @param {Entity} entity - The entity to check collision with
+     * @returns {boolean} True if collision detected, false otherwise
+     */
     collidesWith(entity) {
         if (this.isCollected) return false;
         
@@ -73,6 +96,11 @@ export default class Heart extends Entity {
         return super.collidesWith(entity);
     }
 
+    /**
+     * Handles collection of the heart by the player.
+     * Restores 1 health point to the player and plays sound effect.
+     * @param {Player} player - The player that collected the heart
+     */
     collect(player) {
         this.isCollected = true; // Mark as collected to prevent double collection
         sounds.play(SoundName.Powerup); // Play collection sound effect
