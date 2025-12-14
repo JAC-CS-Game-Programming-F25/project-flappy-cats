@@ -51,8 +51,14 @@
         {
             "name": "pipes2",
             "path": "./assets/images/pipes-2.png",
-            "width": 32,
-            "height": 320
+            "width": 342,
+            "height": 216
+        },
+        {
+            "name": "powerPipes",
+            "path": "./assets/images/PowerPipes.png",
+            "width": 2600,
+            "height": 1546
         }
     ],
     "fonts": [

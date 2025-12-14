@@ -6,6 +6,7 @@ const ImageName = {
 	Tubes: 'tubes',
 	Pipes: 'pipes',
 	Pipes2: 'pipes2',
+	PowerPipes: 'powerPipes',
 	SpriteSheet: 'spritesheet',
 	LightAndSmallCat: 'lightAndSmallCat',
 };
