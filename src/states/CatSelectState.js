@@ -40,6 +40,10 @@ export default class CatSelectState extends State {
 	}
 
 	enter() {
+		// Sync selectedIndex with gameController's selectedCatIndex
+		// This ensures the correct cat is highlighted when coming from pause/restart
+		this.selectedIndex = this.gameController.selectedCatIndex || 0;
+
 		const spriteSheet = images.get('spritesheet');
 		const lightAndSmallCatSheet = images.get('lightAndSmallCat');
 
@@ -116,11 +120,16 @@ export default class CatSelectState extends State {
 
 		if (confirmed) {
 			this.gameController.setSelectedCat(this.selectedIndex); // Set selected cat first
+			this.gameController.clearGameState(); // Clear saved game state
 			this.gameController.resetAndCreateNewSession(); // Reset game state (but preserve selectedCatIndex)
 			// Reset the game started flag so PlayState will reinitialize
 			const playState = stateMachine.states[GameStateName.Play];
 			if (playState) {
 				playState.isGameStarted = false;
+				// Unpause player if it exists
+				if (playState.player) {
+					playState.player.isPaused = false;
+				}
 			}
 			stateMachine.change(GameStateName.Play);
 		}

@@ -64,10 +64,13 @@ stateMachine.add(GameStateName.Play, new PlayState(gameController));            
 stateMachine.add(GameStateName.Pause, new PauseState(gameController));           // Pause + countdown
 stateMachine.add(GameStateName.GameOver, new GameOverState(gameController));     // Game over screen
 
+// Give StateMachine access to gameController so it can save state transitions
+stateMachine.gameController = gameController;
+
 // Start in the Restore state.
 // If a save exists, RestoreState will jump to PlayState.
 // If not, it will go to TitleState.
-stateMachine.change(GameStateName.Title);
+stateMachine.change(GameStateName.Restore);
 
 
 

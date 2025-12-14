@@ -21,6 +21,7 @@ import {
 	context,
 	CANVAS_WIDTH,
 	CANVAS_HEIGHT,
+	fonts,
 } from '../globals.js';
 
 export default class RestoreState extends State {
@@ -42,23 +43,82 @@ export default class RestoreState extends State {
 	 *  - route player to correct next state
 	 */
 	enter() {
-		// Attempt to fetch saved game data from localStorage
-		const savedData = this.gameController.loadGameState();
+		// Prevent infinite recursion - if we're already restoring, just go to Title
+		if (stateMachine.isRestoring) {
+			stateMachine.isRestoring = false;
+			setTimeout(() => stateMachine.change(GameStateName.Title), 0);
+			return;
+		}
 
-		if (savedData) {
+		// Set flag to prevent saving state transitions during restore
+		stateMachine.isRestoring = true;
+		
+		// Use setTimeout to defer state changes until after enter() completes
+		// This prevents infinite recursion
+		setTimeout(() => {
+			// Attempt to fetch saved game data from localStorage
+			const savedData = this.gameController.loadGameState();
+
+			// If no save exists, start on title screen 
+			if (!savedData || !savedData.activeState) {
+				stateMachine.isRestoring = false; // Clear flag before changing
+				stateMachine.change(GameStateName.Title);
+				return;
+			}
+
+			// Safety check: if saved state is "restore", clear it and go to Title
+			// This prevents infinite loops if RestoreState was accidentally saved
+			if (savedData.activeState === GameStateName.Restore) {
+				this.gameController.clearGameState();
+				stateMachine.isRestoring = false; // Clear flag before changing
+				stateMachine.change(GameStateName.Title);
+				return;
+			}
+
 			/**
-			 * Save exists -> restore values (score/lives/cat/etc.)
+			 * Save exists -> restore basic values (score/lives/cat/etc.)
+			 * Then restore to the saved UI state
 			 */
 			this.gameController.restoreFromData(savedData);
 
-			// Resume gameplay from saved state
-			stateMachine.change(GameStateName.Play);
-		} else {
-			/**
-			 * No save exists -> go to main title screen
-			 */
-			stateMachine.change(GameStateName.Title);
-		}
+			// Restore to the saved state
+			const savedState = savedData.activeState;
+			
+			// If saved state is Title, just go to Title (don't restore game data)
+			if (savedState === GameStateName.Title) {
+				stateMachine.isRestoring = false; // Clear flag before changing
+				stateMachine.change(GameStateName.Title);
+				return;
+			}
+			
+			// For Play and Pause states, full game state restoration happens in PlayState.enter()
+			if (savedState === GameStateName.Play || savedState === GameStateName.Pause) {
+				// First restore PlayState (which will restore full game state)
+				stateMachine.change(GameStateName.Play);
+				
+				// If it was paused, freeze player movement and transition to Pause state immediately
+				if (savedState === GameStateName.Pause) {
+					// Freeze player immediately to prevent falling
+					// This must happen before any update() calls
+					const playState = stateMachine.states[GameStateName.Play];
+					if (playState && playState.player) {
+						playState.player.velocity.x = 0;
+						playState.player.velocity.y = 0;
+					}
+					
+					// Transition immediately to prevent any update() calls on PlayState
+					// The player velocity is already frozen in restoreGameState and here
+					stateMachine.isRestoring = false; // Clear flag before changing
+					stateMachine.change(GameStateName.Pause);
+				} else {
+					stateMachine.isRestoring = false; // Clear flag after restore
+				}
+			} else {
+				// For other states (CatSelect, GameOver), just go to that state
+				stateMachine.isRestoring = false; // Clear flag before changing
+				stateMachine.change(savedState);
+			}
+		}, 0);
 	}
 
 	/**

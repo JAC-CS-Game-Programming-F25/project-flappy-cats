@@ -32,6 +32,7 @@ import PowerUpFactory from '../services/PowerUpFactory.js';
 import ImageName from '../enums/ImageName.js';
 import Input from '../../lib/Input.js';
 import SlowPowerUp from '../entities/SlowPowerUp.js';
+import InvinciblePowerUp from '../entities/InvinciblePowerUp.js';
 import Pipe from '../entities/Pipe.js';
 
 export default class PlayState extends State {
@@ -62,16 +63,31 @@ export default class PlayState extends State {
 		this.powerUpSpawnTimer = 0;
 		this.powerUpSpawnInterval = 8.0; // Spawn a power-up every 8 seconds
 		this.isGameStarted = false;
+		this.autoSaveTimer = 0;
+		this.autoSaveInterval = 2.0; // Auto-save every 2 seconds
 	}
 
 	/**
 	 * Called when entering this state.
 	 * Only initialize if the game hasn't been started yet.
+	 * If saved data exists, restore from it instead of initializing fresh.
 	 */
 	enter() {
-		// Only initialize if the game hasn't been started yet
-		// This prevents resetting the game when resuming from pause
-		if (!this.isGameStarted) {
+		// Unpause player when entering PlayState (in case we're resuming from pause)
+		if (this.player) {
+			this.player.isPaused = false;
+		}
+		
+		// Check if we have saved game data to restore
+		const savedData = this.gameController.loadGameState();
+		
+		if (savedData && savedData.player && !this.isGameStarted) {
+			// Restore from saved data
+			this.restoreGameState(savedData);
+			this.isGameStarted = true;
+		} else if (!this.isGameStarted) {
+			// Only initialize if the game hasn't been started yet
+			// This prevents resetting the game when resuming from pause
 			this.initializeGame();
 		}
 	}
@@ -102,6 +118,7 @@ export default class PlayState extends State {
 		this.starSpawnTimer = 0; // Reset star spawn timer
 		this.heartSpawnTimer = 0; // Reset heart spawn timer
 		this.powerUpSpawnTimer = 0; // Reset power-up spawn timer
+		this.autoSaveTimer = 0; // Reset auto-save timer
 		this.isGameStarted = true; // Mark game as started
 
 		// Store player reference in gameController
@@ -109,6 +126,157 @@ export default class PlayState extends State {
 		
 		// Sync lives with player health (they represent the same thing)
 		this.gameController.lives = this.player.health; // Ensure lives match player health
+	}
+
+	/**
+	 * Restores the game state from saved data.
+	 * Recreates all entities (player, pipes, stars, hearts, power-ups) from saved positions and states.
+	 * @param {Object} savedData - The saved game data from localStorage
+	 */
+	restoreGameState(savedData) {
+		// Restore basic game state
+		this.gameController.score = savedData.score || 0;
+		this.gameController.lives = savedData.lives || 3;
+		this.gameController.selectedCatIndex = savedData.selectedCatIndex || 0;
+
+		// Restore spawn timers
+		if (savedData.spawnTimers) {
+			this.pipeSpawnTimer = savedData.spawnTimers.pipeSpawnTimer || 0;
+			this.starSpawnTimer = savedData.spawnTimers.starSpawnTimer || 0;
+			this.heartSpawnTimer = savedData.spawnTimers.heartSpawnTimer || 0;
+			this.powerUpSpawnTimer = savedData.spawnTimers.powerUpSpawnTimer || 0;
+		}
+		this.autoSaveTimer = 0; // Reset auto-save timer on restore
+
+		// Restore player
+		if (savedData.player) {
+			const playerWidth = 16;
+			const playerHeight = 32;
+			this.player = new Player(
+				savedData.player.position.x || CANVAS_WIDTH * 0.2,
+				savedData.player.position.y || CANVAS_HEIGHT / 2,
+				playerWidth,
+				playerHeight,
+				savedData.player.catIndex || this.gameController.selectedCatIndex
+			);
+
+			// Restore player state
+			this.player.position.x = savedData.player.position.x;
+			this.player.position.y = savedData.player.position.y;
+			
+			// Check if we're restoring to PauseState - if so, freeze player movement
+			// This prevents the player from falling when reloading while paused
+			if (savedData.activeState === 'pause') {
+				// Freeze player when restoring to pause state
+				this.player.velocity.x = 0;
+				this.player.velocity.y = 0;
+				this.player.isPaused = true; // Set paused flag to prevent physics updates
+			} else {
+				// Otherwise, restore the saved velocity
+				this.player.velocity.x = savedData.player.velocity.x || 0;
+				this.player.velocity.y = savedData.player.velocity.y || 0;
+				this.player.isPaused = false; // Ensure player is not paused
+			}
+			this.player.health = savedData.player.health || 3;
+			this.player.stars = savedData.player.stars || 0;
+			this.player.isDead = savedData.player.isDead || false;
+			this.player.isHurt = savedData.player.isHurt || false;
+			this.player.hurtTimer = savedData.player.hurtTimer || 0;
+			this.player.isInvincible = savedData.player.isInvincible || false;
+			this.player.powerUpTimer = savedData.player.powerUpTimer || 0;
+
+			// Restore active power-up if it exists
+			if (savedData.player.activePowerUpType && savedData.player.powerUpTimer > 0) {
+				if (savedData.player.activePowerUpType === 'invincible') {
+					this.player.activePowerUp = new InvinciblePowerUp(0, 0);
+					this.player.activePowerUp.isCollected = true; // Mark as collected since it's active
+					this.player.isInvincible = true;
+				} else if (savedData.player.activePowerUpType === 'slow') {
+					this.player.activePowerUp = new SlowPowerUp(0, 0);
+					this.player.activePowerUp.isCollected = true; // Mark as collected since it's active
+					// Apply slow effect
+					if (SlowPowerUp.originalSpeed === null) {
+						SlowPowerUp.originalSpeed = Pipe.SPEED;
+					}
+					Pipe.SPEED = SlowPowerUp.originalSpeed / 2;
+				}
+			}
+
+			this.gameController.player = this.player;
+		} else {
+			// Fallback: initialize normally if no player data
+			this.initializeGame();
+			return;
+		}
+
+		// Restore pipes
+		this.pipes = [];
+		if (savedData.pipes && Array.isArray(savedData.pipes)) {
+			for (const pipeData of savedData.pipes) {
+				if (pipeData.isDead) continue; // Skip dead pipes
+
+				// Create pipe pair directly at saved position (don't use factory which spawns at canvas.width)
+				const pipePair = new PipePair(pipeData.position.x);
+				pipePair.position.x = pipeData.position.x;
+				pipePair.isPassed = pipeData.isPassed || false;
+				pipePair.isDead = pipeData.isDead || false;
+
+				// Restore gap position by recreating pipes with correct gapY
+				const gapY = pipeData.gapY || CANVAS_HEIGHT / 2;
+				pipePair.pipes = [];
+				pipePair.pipes.push(new Pipe(pipeData.position.x, gapY, true));
+				pipePair.pipes.push(new Pipe(pipeData.position.x, gapY + PipePair.GAP_HEIGHT, false));
+				
+				// Update pipe positions
+				pipePair.pipes.forEach(pipe => {
+					pipe.position.x = pipeData.position.x;
+				});
+
+				this.pipes.push(pipePair);
+			}
+		}
+
+		// Restore stars
+		this.stars = [];
+		if (savedData.stars && Array.isArray(savedData.stars)) {
+			for (const starData of savedData.stars) {
+				const star = this.starFactory.spawn();
+				star.position.x = starData.position.x;
+				star.position.y = starData.position.y;
+				star.isCollected = false;
+				this.stars.push(star);
+			}
+		}
+
+		// Restore hearts
+		this.hearts = [];
+		if (savedData.hearts && Array.isArray(savedData.hearts)) {
+			for (const heartData of savedData.hearts) {
+				const heart = this.heartFactory.spawn();
+				heart.position.x = heartData.position.x;
+				heart.position.y = heartData.position.y;
+				heart.animationTimer = heartData.animationTimer || 0;
+				heart.isCollected = false;
+				this.hearts.push(heart);
+			}
+		}
+
+		// Restore power-ups
+		this.powerUps = [];
+		if (savedData.powerUps && Array.isArray(savedData.powerUps)) {
+			for (const powerUpData of savedData.powerUps) {
+				let powerUp;
+				if (powerUpData.type === 'invincible') {
+					powerUp = new InvinciblePowerUp(powerUpData.position.x, powerUpData.position.y);
+				} else {
+					powerUp = new SlowPowerUp(powerUpData.position.x, powerUpData.position.y);
+				}
+				powerUp.position.x = powerUpData.position.x;
+				powerUp.position.y = powerUpData.position.y;
+				powerUp.isCollected = false;
+				this.powerUps.push(powerUp);
+			}
+		}
 	}
 
 	/**
@@ -131,7 +299,7 @@ export default class PlayState extends State {
 		// Check for game over condition (player dead or no lives)
 		if (!this.player || this.player.isDead || this.player.health <= 0 || this.gameController.isGameOver()) {
 			// Game over - transition to GameOverState
-			this.gameController.saveGameState(GameStateName.GameOver);
+			this.gameController.saveGameState(GameStateName.GameOver, this); // Pass PlayState for full save
 			stateMachine.change(GameStateName.GameOver);
 			return;
 		}
@@ -281,6 +449,13 @@ export default class PlayState extends State {
 			}
 		}
 
+		// Auto-save game state periodically
+		this.autoSaveTimer += dt;
+		if (this.autoSaveTimer >= this.autoSaveInterval) {
+			this.gameController.saveGameState(GameStateName.Play, this); // Auto-save full game state
+			this.autoSaveTimer = 0; // Reset timer
+		}
+
 		/**
 		 * Pause behavior:
 		 * Pressing P instantly pauses the game.
@@ -289,7 +464,7 @@ export default class PlayState extends State {
 		const userRequestedPause = input.isKeyPressed('P');
 
 		if (userRequestedPause) {
-			this.gameController.saveGameState(GameStateName.Play);
+			this.gameController.saveGameState(GameStateName.Play, this); // Pass PlayState for full save
 			stateMachine.change(GameStateName.Pause);
 			return; // Stop updating gameplay during same frame
 		}

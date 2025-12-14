@@ -142,10 +142,12 @@ export default class Player extends Entity {
 		// PowerUp tracking
 		this.activePowerUp = null; // Currently active power-up (or null if none)
 		this.powerUpTimer = 0; // Remaining time for active power-up in seconds
+		this.isPaused = false; // Flag to prevent physics updates when paused
 	}
 
 	update(dt) {
 		if (this.isDead) return; // Don't update if player is dead
+		if (this.isPaused) return; // Don't update physics if paused
 
 		// Apply gravity with weight modifier
 		this.velocity.y += this.gravity * this.weight * dt; // Heavier cats fall faster

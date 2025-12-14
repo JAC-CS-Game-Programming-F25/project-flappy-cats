@@ -48,9 +48,24 @@ export default class PauseState extends State {
 	/**
 	 * Called when entering this state.
 	 * Reset countdown to show the pause menu box.
+	 * Also save the full game state so we can restore on reload.
 	 */
 	enter() {
 		this.countdownValue = null; // Reset to show pause menu
+		
+		// Freeze player movement when entering pause state
+		// This prevents the player from falling/moving while paused
+		const playState = stateMachine.states[GameStateName.Play];
+		if (playState && playState.player) {
+			// Freeze player velocity to prevent any movement
+			playState.player.velocity.x = 0;
+			playState.player.velocity.y = 0;
+			// Set paused flag to prevent physics updates
+			playState.player.isPaused = true;
+			
+			// Save the full game state when entering pause
+			this.gameController.saveGameState(GameStateName.Pause, playState);
+		}
 	}
 
 	/**
@@ -88,24 +103,36 @@ export default class PauseState extends State {
 
 			// R -> Restart game
 			if (input.isKeyPressed('R')) {
+				// Clear saved game state
+				this.gameController.clearGameState();
 				// Reset game state and restart
 				this.gameController.resetAndCreateNewSession();
 				// Reset the game started flag so PlayState will reinitialize
 				const playState = stateMachine.states[GameStateName.Play];
 				if (playState) {
 					playState.isGameStarted = false;
+					// Unpause player if it exists
+					if (playState.player) {
+						playState.player.isPaused = false;
+					}
 				}
 				stateMachine.change(GameStateName.Play);
 			}
 
 			// C -> Go to cat selection
 			if (input.isKeyPressed('C')) {
+				// Clear saved game state
+				this.gameController.clearGameState();
 				// Reset game state
 				this.gameController.resetAndCreateNewSession();
 				// Reset the game started flag so PlayState will reinitialize
 				const playState = stateMachine.states[GameStateName.Play];
 				if (playState) {
 					playState.isGameStarted = false;
+					// Unpause player if it exists
+					if (playState.player) {
+						playState.player.isPaused = false;
+					}
 				}
 				stateMachine.change(GameStateName.CatSelect);
 			}
