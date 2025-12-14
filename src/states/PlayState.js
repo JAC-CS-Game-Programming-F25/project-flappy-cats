@@ -411,56 +411,59 @@ export default class PlayState extends State {
 		context.strokeStyle = 'black';
 		context.lineWidth = 2;
 
+		// Helper function to render label + number with different fonts
+		const renderStat = (label, value, x, y) => {
+			// Render label with FlappyBirdy font
+			context.font = fonts.FlappySmall;
+			const labelText = label + ': ';
+			context.strokeText(labelText, x, y);
+			context.fillText(labelText, x, y);
+			
+			// Measure label width to position number
+			const labelWidth = context.measureText(labelText).width;
+			
+			// Render number with Arial font
+			context.font = '20px Arial';
+			const numberText = String(value);
+			context.strokeText(numberText, x + labelWidth, y);
+			context.fillText(numberText, x + labelWidth, y);
+		};
+
 		// Score (rounded)
-		context.strokeText(
-			'Score: ' + Math.floor(this.gameController.score),
-			10,
-			30
-		);
-		context.fillText(
-			'Score: ' + Math.floor(this.gameController.score),
-			10,
-			30
-		);
+		renderStat('Score', Math.floor(this.gameController.score), 10, 30);
 
 		// Lives - display player health (synced with gameController.lives in update loop)
 		const displayLives = this.player ? this.player.health : this.gameController.lives;
-		context.strokeText(
-			'Lives: ' + displayLives,
-			10,
-			55
-		);
-		context.fillText(
-			'Lives: ' + displayLives,
-			10,
-			55
-		);
+		renderStat('Lives', displayLives, 10, 55);
 
 		// Stars (from player if available, otherwise from gameController)
 		const stars = this.player?.stars || this.gameController.stars || 0;
-		context.strokeText(
-			'Stars: ' + stars,
-			10,
-			80
-		);
-		context.fillText(
-			'Stars: ' + stars,
-			10,
-			80
-		);
+		renderStat('Stars', stars, 10, 80);
 
 		// High score (right aligned)
 		context.textAlign = 'right';
-		context.strokeText(
-			'High Score: ' + this.gameController.highScore,
-			CANVAS_WIDTH - 10,
-			30
-		);
-		context.fillText(
-			'High Score: ' + this.gameController.highScore,
-			CANVAS_WIDTH - 10,
-			30
-		);
+		// Render label with FlappyBirdy font
+		context.font = fonts.FlappySmall;
+		const highScoreLabel = 'High Score: ';
+		const highScoreLabelWidth = context.measureText(highScoreLabel).width;
+		
+		// Render number with Arial font (position it to the left of the label)
+		context.font = '20px Arial';
+		const highScoreNumber = String(this.gameController.highScore);
+		const highScoreNumberWidth = context.measureText(highScoreNumber).width;
+		
+		// Calculate positions: number first, then label
+		const numberX = CANVAS_WIDTH - 10;
+		const labelX = numberX - highScoreNumberWidth;
+		
+		// Render number
+		context.strokeText(highScoreNumber, numberX, 30);
+		context.fillText(highScoreNumber, numberX, 30);
+		
+		// Render label
+		context.font = fonts.FlappySmall;
+		context.strokeText(highScoreLabel, labelX, 30);
+		context.fillText(highScoreLabel, labelX, 30);
 	}
 
 }

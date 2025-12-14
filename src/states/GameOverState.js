@@ -111,7 +111,7 @@ export default class GameOverState extends State {
 		);
 
 		// "Here is your stats:" text
-		context.font = fonts.FlappySmall;
+		context.font = fonts.FlappyMedium; 
 		context.fillText(
 			'Here is your stats:',
 			CANVAS_WIDTH / 2,
@@ -122,42 +122,50 @@ export default class GameOverState extends State {
 		const statsY = boxY + 110;
 		const lineHeight = 30;
 
+		// Helper function to render label + number with different fonts
+		// Labels on the left, numbers on the right (at the corners of the box)
+		const renderStat = (label, value, y) => {
+			const padding = 20; // Padding from box edges
+			
+			// Render label on the left with FlappyBirdy font (smaller)
+			context.textAlign = 'left';
+			context.font = fonts.FlappyMedium; // Changed from FlappyLarge to FlappyMedium
+			const labelText = label + ': ';
+			context.fillText(labelText, boxX + padding, y);
+			
+			// Render number on the right with Arial font (smaller)
+			context.textAlign = 'right';
+			context.font = '24px Arial'; // Changed from 32px to 24px
+			const numberText = String(value);
+			context.fillText(numberText, boxX + boxWidth - padding, y);
+		};
+
 		// Current Score
-		context.font = fonts.FlappyMedium;
-		context.fillText(
-			`Current Score: ${Math.floor(this.gameController.score)}`,
-			CANVAS_WIDTH / 2,
-			statsY
-		);
+		renderStat('Current Score', Math.floor(this.gameController.score), statsY);
 
 		// High Score
-		context.fillText(
-			`High Score: ${this.gameController.highScore}`,
-			CANVAS_WIDTH / 2,
-			statsY + lineHeight
-		);
+		renderStat('High Score', this.gameController.highScore, statsY + lineHeight);
 
 		// Stars collected (from player if available)
 		const stars = this.gameController.player?.stars || 0;
-		context.fillText(
-			`Stars Collected: ${stars}`,
-			CANVAS_WIDTH / 2,
-			statsY + lineHeight * 2
-		);
+		renderStat('Stars Collected', stars, statsY + lineHeight * 2);
 
-		// Options section
+		// Options section (shifted more to the right)
 		const optionsY = statsY + lineHeight * 3 + 20;
-		context.font = fonts.FlappySmall;
+		const boxCenterX = boxX + boxWidth / 2; // Center of the box, not the canvas
+		const rightOffset = 80; // Shift even more to the right
+		
+		context.font = fonts.FlappyMedium;
 		context.fillText(
 			'Press ENTER to Restart',
-			CANVAS_WIDTH / 2,
+			boxCenterX + rightOffset, // Shifted more to the right
 			optionsY
 		);
 
 		context.fillText(
 			'Press C to Choose Cat',
-			CANVAS_WIDTH / 2,
-			optionsY + 25
+			boxCenterX + rightOffset, // Shifted more to the right
+			optionsY + 30
 		);
 	}
 }

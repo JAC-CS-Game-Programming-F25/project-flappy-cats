@@ -74,20 +74,20 @@ export default class TitleScreenState extends State {
 	// Clear previous frame so no old color shows behind transparent pixels
 	context.clearRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
 
-	// Tile the background to fill the entire screen
-	const bgWidth = this.backgroundSprite.width;
-	const bgHeight = this.backgroundSprite.height;
+	// Scale background to fill entire screen (no tiling to avoid seams)
+	const scale = Math.max(
+		CANVAS_WIDTH / this.backgroundSprite.width,
+		CANVAS_HEIGHT / this.backgroundSprite.height
+	);
 
-	// Calculate how many tiles we need
-	const tilesX = Math.ceil(CANVAS_WIDTH / bgWidth) + 1;
-	const tilesY = Math.ceil(CANVAS_HEIGHT / bgHeight) + 1;
+	const bgDrawWidth = this.backgroundSprite.width * scale;
+	const bgDrawHeight = this.backgroundSprite.height * scale;
 
-	// Render tiled background
-	for (let x = 0; x < tilesX; x++) {
-		for (let y = 0; y < tilesY; y++) {
-			this.backgroundSprite.render(x * bgWidth, y * bgHeight);
-		}
-	}
+	const bgX = (CANVAS_WIDTH - bgDrawWidth) / 2;
+	const bgY = (CANVAS_HEIGHT - bgDrawHeight) / 2;
+
+	// Graphic.render takes (x, y, width, height) - not a scale object
+	this.backgroundSprite.render(bgX, bgY, bgDrawWidth, bgDrawHeight);
 
 	// Title centered near the top
 	const titleX = (CANVAS_WIDTH - this.titleSprite.width) / 2;

@@ -98,6 +98,18 @@ export default class PauseState extends State {
 				stateMachine.change(GameStateName.Play);
 			}
 
+			// C -> Go to cat selection
+			if (input.isKeyPressed('C')) {
+				// Reset game state
+				this.gameController.resetAndCreateNewSession();
+				// Reset the game started flag so PlayState will reinitialize
+				const playState = stateMachine.states[GameStateName.Play];
+				if (playState) {
+					playState.isGameStarted = false;
+				}
+				stateMachine.change(GameStateName.CatSelect);
+			}
+
 			// Stop here: do not update anything else while paused.
 			return;
 		}
@@ -157,33 +169,46 @@ export default class PauseState extends State {
 		context.fillText('PAUSED', CANVAS_WIDTH / 2, boxY + 40);
 
 		// Game info
-		context.font = fonts.FlappySmall;
 		const infoY = boxY + 80;
 		const lineHeight = 25;
 
+		// Helper function to render label + number with different fonts (centered)
+		const renderStat = (label, value, y) => {
+			// Render label with FlappyBirdy font (make bigger)
+			context.font = fonts.FlappyLarge; // Bigger labels
+			const labelText = label + ': ';
+			const labelWidth = context.measureText(labelText).width;
+			
+			// Render number with Arial font (make smaller)
+			context.font = '20px Arial'; // Smaller numbers
+			const numberText = String(value);
+			const numberWidth = context.measureText(numberText).width;
+			
+			// Calculate total width and starting position (centered)
+			const totalWidth = labelWidth + numberWidth;
+			const startX = (CANVAS_WIDTH - totalWidth) / 2;
+			
+			// Render label
+			context.font = fonts.FlappyLarge;
+			context.fillText(labelText, startX, y);
+			
+			// Render number
+			context.font = '20px Arial';
+			context.fillText(numberText, startX + labelWidth, y);
+		};
+
 		// Score
-		context.fillText(
-			`Score: ${this.gameController.score}`,
-			CANVAS_WIDTH / 2,
-			infoY
-		);
+		renderStat('Score', this.gameController.score, infoY);
 
 		// Stars (from player if available)
 		const stars = this.gameController.player?.stars || 0;
-		context.fillText(
-			`Stars: ${stars}`,
-			CANVAS_WIDTH / 2,
-			infoY + lineHeight
-		);
+		renderStat('Stars', stars, infoY + lineHeight);
 
 		// Lives/Health
-		context.fillText(
-			`Lives: ${this.gameController.lives}`,
-			CANVAS_WIDTH / 2,
-			infoY + lineHeight * 2
-		);
+		renderStat('Lives', this.gameController.lives, infoY + lineHeight * 2);
 
-		// Instructions
+		// Instructions (bigger font)
+		context.font = fonts.FlappyMedium; // Bigger font for instructions
 		context.fillText(
 			'Press P to resume',
 			CANVAS_WIDTH / 2,
@@ -193,6 +218,11 @@ export default class PauseState extends State {
 			'Press R to restart',
 			CANVAS_WIDTH / 2,
 			infoY + lineHeight * 4 + 10
+		);
+		context.fillText(
+			'Press C to choose cat',
+			CANVAS_WIDTH / 2,
+			infoY + lineHeight * 5 + 10
 		);
 	}
 
