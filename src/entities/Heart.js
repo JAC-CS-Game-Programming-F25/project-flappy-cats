@@ -7,24 +7,31 @@ import { smallSpriteConfig } from '../../config/SpriteConfig.js';
 import Pipe from './Pipe.js';
 
 export default class Heart extends Entity {
-    static WIDTH = 16;
-    static HEIGHT = 16;
+    static HEART_SPRITESHEET_X = 5500;    // X coordinate
+    static HEART_SPRITESHEET_Y = 5;       // Y coordinate
+    static HEART_SPRITESHEET_WIDTH = 200; // Width: 5700 - 5500 = 200
+    static HEART_SPRITESHEET_HEIGHT = 173;// Height: 178 - 5 = 173
+    
+    static WIDTH = 32;   // Game width for heart
+    static HEIGHT = 28;  // Game height for heart
+    
+    // Scale factor to shrink the heart sprite from spritesheet to game size
+    static HEART_SCALE = 32 / 200;  // Scale factor: 32/200 = 0.16 (updated for new width)
 
     constructor(x, y) {
         super(x, y, Heart.WIDTH, Heart.HEIGHT);
 
-        // Use "grow" (Mushroom) sprite as placeholder for Heart
-        // grow: [{ x: 596, y: 258, width: 16, height: 32 }]
-        // We'll just take the top 16x16 or resize
-        const frame = smallSpriteConfig.grow[0];
-
-        this.sprite = new Sprite(
-            images.get(ImageName.Mario),
-            frame.x,
-            frame.y,
-            frame.width,
-            frame.height
-        );
+        // Get the spritesheet image and extract the heart sprite
+        const spriteSheet = images.get(ImageName.SpriteSheet);
+        
+        // Create sprite from the heart coordinates in the spritesheet
+        this.sprite = spriteSheet ? new Sprite(
+            spriteSheet,
+            Heart.HEART_SPRITESHEET_X,
+            Heart.HEART_SPRITESHEET_Y,
+            Heart.HEART_SPRITESHEET_WIDTH,
+            Heart.HEART_SPRITESHEET_HEIGHT
+        ) : null;
 
         this.isCollected = false;
 
@@ -45,11 +52,16 @@ export default class Heart extends Entity {
     }
 
     render(context) {
-        if (this.isCollected) return;
+        if (this.isCollected || !this.sprite) return;
         
         // Apply bounce offset to vertical position
         const renderY = this.position.y + this.bounceOffset;
-        this.sprite.render(this.position.x, renderY);
+        
+        // Render the heart sprite scaled down to game size
+        this.sprite.render(this.position.x, renderY, { 
+            x: Heart.HEART_SCALE, 
+            y: Heart.HEART_SCALE 
+        });
     }
 
     collidesWith(player) {
