@@ -37,6 +37,12 @@
             "height": 432
         },
         {
+            "name": "backgroundSky",
+            "path": "./assets/images/backgroundSky.jpg",
+            "width": 720,
+            "height": 360
+        },
+        {
             "name": "tubes",
             "path": "./assets/images/tubes.png",
             "width": 32,

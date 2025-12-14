@@ -22,6 +22,7 @@ import {
 	stateMachine,
 } from '../globals.js';
 import Sprite from '../../lib/Sprite.js';
+import ImageName from '../enums/ImageName.js';
 
 export default class TitleScreenState extends State {
 	constructor() {
@@ -42,8 +43,8 @@ export default class TitleScreenState extends State {
 		const spriteSheet = images.get('spritesheet');
 		if (!spriteSheet) return;
 
-		// Background
-		this.backgroundSprite = new Sprite(spriteSheet, 2898, -12, 584, 357);
+		// Background - use the sky background image
+		this.backgroundSprite = images.get(ImageName.BackgroundSky);
 
 		// Title
 		this.titleSprite = new Sprite(spriteSheet, 3499, 28, 640, 179);
@@ -73,19 +74,20 @@ export default class TitleScreenState extends State {
 	// Clear previous frame so no old color shows behind transparent pixels
 	context.clearRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
 
-	// zoom/crop so no borders show
-	const scale = Math.max(
-		CANVAS_WIDTH / this.backgroundSprite.width,
-		CANVAS_HEIGHT / this.backgroundSprite.height
-	);
+	// Tile the background to fill the entire screen
+	const bgWidth = this.backgroundSprite.width;
+	const bgHeight = this.backgroundSprite.height;
 
-	const bgDrawWidth = this.backgroundSprite.width * scale;
-	const bgDrawHeight = this.backgroundSprite.height * scale;
+	// Calculate how many tiles we need
+	const tilesX = Math.ceil(CANVAS_WIDTH / bgWidth) + 1;
+	const tilesY = Math.ceil(CANVAS_HEIGHT / bgHeight) + 1;
 
-	const bgX = (CANVAS_WIDTH - bgDrawWidth) / 2;
-	const bgY = (CANVAS_HEIGHT - bgDrawHeight) / 2;
-
-	this.backgroundSprite.render(bgX, bgY, { x: scale, y: scale });
+	// Render tiled background
+	for (let x = 0; x < tilesX; x++) {
+		for (let y = 0; y < tilesY; y++) {
+			this.backgroundSprite.render(x * bgWidth, y * bgHeight);
+		}
+	}
 
 	// Title centered near the top
 	const titleX = (CANVAS_WIDTH - this.titleSprite.width) / 2;

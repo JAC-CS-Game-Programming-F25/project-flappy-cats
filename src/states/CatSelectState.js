@@ -24,6 +24,7 @@ import {
 	CANVAS_HEIGHT,
 } from '../globals.js';
 import Sprite from '../../lib/Sprite.js';
+import ImageName from '../enums/ImageName.js';
 
 export default class CatSelectState extends State {
 	constructor(gameController) {
@@ -44,8 +45,8 @@ export default class CatSelectState extends State {
 
 		if (!spriteSheet || !lightAndSmallCatSheet) return;
 
-		// Cloud background
-		this.backgroundSprite = new Sprite(spriteSheet, 2898, -12, 584, 357);
+		// Use the sky background image
+		this.backgroundSprite = images.get(ImageName.BackgroundSky);
 
 		// Sprites
 		const heavyCatSprite = new Sprite(spriteSheet, 4208, 46, 320, 443);
@@ -131,18 +132,22 @@ export default class CatSelectState extends State {
 	}
 
 	renderBackground() {
-		const scale = Math.max(
-			CANVAS_WIDTH / this.backgroundSprite.width,
-			CANVAS_HEIGHT / this.backgroundSprite.height
-		);
+		if (!this.backgroundSprite) return;
 
-		const drawWidth = this.backgroundSprite.width * scale + 2;
-		const drawHeight = this.backgroundSprite.height * scale + 2;
+		// Tile the background to fill the entire screen
+		const bgWidth = this.backgroundSprite.width;
+		const bgHeight = this.backgroundSprite.height;
 
-		const x = (CANVAS_WIDTH - drawWidth) / 2;
-		const y = (CANVAS_HEIGHT - drawHeight) / 2;
+		// Calculate how many tiles we need
+		const tilesX = Math.ceil(CANVAS_WIDTH / bgWidth) + 1;
+		const tilesY = Math.ceil(CANVAS_HEIGHT / bgHeight) + 1;
 
-		this.backgroundSprite.render(x, y, { x: scale, y: scale });
+		// Render tiled background
+		for (let x = 0; x < tilesX; x++) {
+			for (let y = 0; y < tilesY; y++) {
+				this.backgroundSprite.render(x * bgWidth, y * bgHeight);
+			}
+		}
 	}
 
 	renderTitle() {

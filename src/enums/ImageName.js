@@ -3,6 +3,7 @@ const ImageName = {
 	Mario: 'mario',
 	Luigi: 'luigi',
 	Background: 'background',
+	BackgroundSky: 'backgroundSky',
 	Tubes: 'tubes',
 	Pipes: 'pipes',
 	Pipes2: 'pipes2',
