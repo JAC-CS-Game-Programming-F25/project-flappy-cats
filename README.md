@@ -5,7 +5,7 @@
 
 ### • What is our game about?:
 
-Inspired by Flappy Bird, our game features a personalized and playful twist: the main character is our own cats. Instead of flapping wings, each cat floats using a balloon. The goal is simple but challenging : survive as long as possible, avoid obstacles, collect stars, manage lives, and maintain control as the difficulty increases over time.
+Inspired by Flappy Bird, our game features a personalized and playful twist: the main character is our own cats. Instead of flapping wings, each cat floats using a balloon. The goal is simple but challenging : survive as long as possible, avoid obstacles, collect stars, manage lives, and maintain control. The difficulty varies based on which cat you choose, some cats are harder to control while others are easier.
 
 ### • Who is the player? What are they doing?
 
@@ -30,7 +30,7 @@ The game is an endless runner that focuses on arcade-style timing and precision 
 • Collect stars to increase score.  
 • Collect hearts to regain lost lives.  
 • Survive as long as possible : the game has no win state, only a high score to beat.  
-• Difficulty naturally increases over time (smaller gaps, faster scrolling, more obstacles).  
+• Difficulty varies based on the cat you choose, each cat offers a different challenge level, with some being harder to control and others being easier.  
 • Occasionally, you can encounter a power-up:
   - Invincibility (5 seconds)  
   - Slow-motion mode (5 seconds)  
@@ -66,18 +66,14 @@ The player should be able to:
 
 ### Collect items
 **Stars:**  
-- Increase score.  
-- Trigger visual sparkle effect and sound.  
-- Occasionally activate a random power-up (5 seconds):  
-  • Invincibility  
-  • Slow motion  
+- Trigger sound effect when collected.  
 
 **Hearts:**  
 - Instantly restore one life (up to a max of 3).
 
 ### Track health and lives
 - Start with 3 lives.  
-- Lose 1 life when hitting a pillar.  
+- Lose 1 life when hitting a pillar or falling down on the bottom of the screen.  
 - Lives are shown on screen (heart icons).  
 - If lives reach 0, the player loses.
 
@@ -172,7 +168,7 @@ Weighted character, bigger too
 
 ### Images / Sprites
 - Player (cat floating with balloon) -> provided by student  
-- Pipes -> custom simple green pixel pipes  
+- Pipes ->  simple green pixel pipes  
 - Stars -> collectible gold stars  
 - Background -> sky + clouds (pixel art)
 
