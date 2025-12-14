@@ -2,7 +2,6 @@ import PowerUp from './PowerUp.js';
 import Sprite from '../../lib/Sprite.js';
 import { images } from '../globals.js';
 import ImageName from '../enums/ImageName.js';
-import { smallSpriteConfig } from '../../config/SpriteConfig.js';
 import Pipe from './Pipe.js';
 
 /**
@@ -30,22 +29,51 @@ import Pipe from './Pipe.js';
 export default class SlowPowerUp extends PowerUp {
     // Store original pipe speed (only set once, on first application)
     static originalSpeed = null;
+    
+    // Slow power-up sprite coordinates in PowerPipes.png
+    static SLOW_POWERUP_SPRITESHEET_X = 0;        // X coordinate
+    static SLOW_POWERUP_SPRITESHEET_Y = 2;        // Y coordinate
+    static SLOW_POWERUP_SPRITESHEET_WIDTH = 605; // Width
+    static SLOW_POWERUP_SPRITESHEET_HEIGHT = 705; // Height
+    
+    static WIDTH = 24;   // Game width for slow power-up
+    static HEIGHT = 28;  // Game height for slow power-up
+    
+    static SLOW_POWERUP_SCALE = 24 / 605;  // Scale factor
 
     constructor(x, y) {
         // INHERITANCE: Call parent constructor using super() to initialize
         // PowerUp properties (which in turn initializes Entity properties)
         super(x, y, 5); // 5 seconds duration
+        
+        // Override dimensions to use slow power-up size instead of base PowerUp size
+        this.dimensions.x = SlowPowerUp.WIDTH;
+        this.dimensions.y = SlowPowerUp.HEIGHT;
 
-        // Use "dust" sprite as placeholder
-        const frame = smallSpriteConfig.dust[0];
-
-        this.sprite = new Sprite(
-            images.get(ImageName.Mario),
-            frame.x,
-            frame.y,
-            frame.width,
-            frame.height
-        );
+        // Get the PowerPipes spritesheet image and extract the slow power-up sprite
+        const powerPipesSheet = images.get(ImageName.PowerPipes);
+        
+        // Create sprite from the slow power-up coordinates in the PowerPipes spritesheet
+        this.sprite = powerPipesSheet ? new Sprite(
+            powerPipesSheet,
+            SlowPowerUp.SLOW_POWERUP_SPRITESHEET_X,
+            SlowPowerUp.SLOW_POWERUP_SPRITESHEET_Y,
+            SlowPowerUp.SLOW_POWERUP_SPRITESHEET_WIDTH,
+            SlowPowerUp.SLOW_POWERUP_SPRITESHEET_HEIGHT
+        ) : null;
+    }
+    
+    /**
+     * Override render method to scale the slow power-up sprite to game size
+     */
+    render(context) {
+        if (this.isCollected || !this.sprite) return;
+        
+        // Render the slow power-up sprite scaled down to game size
+        this.sprite.render(this.position.x, this.position.y, { 
+            x: SlowPowerUp.SLOW_POWERUP_SCALE, 
+            y: SlowPowerUp.SLOW_POWERUP_SCALE 
+        });
     }
 
     /**

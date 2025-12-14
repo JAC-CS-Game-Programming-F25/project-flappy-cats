@@ -1,51 +1,55 @@
 import Entity from './Entity.js';
 import Sprite from '../../lib/Sprite.js';
-import Animation from '../../lib/Animation.js';
-import { sounds } from '../globals.js';
+import { sounds, images } from '../globals.js';
 import SoundName from '../enums/SoundName.js';
 import { isAABBCollision } from '../../lib/Collision.js';
-import { smallSpriteConfig } from '../../config/SpriteConfig.js';
+import ImageName from '../enums/ImageName.js';
 import Pipe from './Pipe.js';
 
 export default class Star extends Entity {
-    static WIDTH = 16;
-    static HEIGHT = 16;
+    // Star sprite coordinates in spritesheet.png
+    static STAR_SPRITESHEET_X = 0;        // X coordinate
+    static STAR_SPRITESHEET_Y = 0;         // Y coordinate
+    static STAR_SPRITESHEET_WIDTH = 188;   // Width
+    static STAR_SPRITESHEET_HEIGHT = 207;  // Height
+    
+    static WIDTH = 32;   // Game width for star
+    static HEIGHT = 35;  // Game height for star
+    
+    static STAR_SCALE = 32 / 188;  // Scale factor
 
-    constructor(x, y, spriteSheet) {
+    constructor(x, y) {
         super(x, y, Star.WIDTH, Star.HEIGHT);
 
         this.isCollected = false; // Track if star has been collected by player
 
-        // Create sparkle animation from all sparkle frames
-        const sparkleSprites = smallSpriteConfig.sparkles.map(frame =>
-            new Sprite(
-                spriteSheet,
-                frame.x,
-                frame.y,
-                frame.width,
-                frame.height
-            )
-        );
-
-        // Create animation with 0.15 second interval between frames
-        this.sparkleAnimation = new Animation(sparkleSprites, 0.15);
+        // Get the spritesheet image and extract the star sprite
+        const spriteSheet = images.get(ImageName.SpriteSheet);
+        
+        // Create sprite from the star coordinates in the spritesheet
+        this.sprite = spriteSheet ? new Sprite(
+            spriteSheet,
+            Star.STAR_SPRITESHEET_X,
+            Star.STAR_SPRITESHEET_Y,
+            Star.STAR_SPRITESHEET_WIDTH,
+            Star.STAR_SPRITESHEET_HEIGHT
+        ) : null;
     }
 
     update(dt) {
         if (this.isCollected) return; // Don't update if already collected
 
         this.position.x -= Pipe.SPEED * dt; // Move left with pipes to stay synchronized
-
-        // Update sparkle animation
-        this.sparkleAnimation.update(dt);
     }
 
     render(context) {
-        if (this.isCollected) return;
+        if (this.isCollected || !this.sprite) return;
         
-        // Render current frame of sparkle animation
-        const frame = this.sparkleAnimation.getCurrentFrame();
-        frame.render(this.position.x, this.position.y);
+        // Render the star sprite scaled down to game size
+        this.sprite.render(this.position.x, this.position.y, { 
+            x: Star.STAR_SCALE, 
+            y: Star.STAR_SCALE 
+        });
     }
 
     collect(player) {

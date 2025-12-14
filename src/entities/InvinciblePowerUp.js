@@ -2,7 +2,6 @@ import PowerUp from './PowerUp.js';
 import Sprite from '../../lib/Sprite.js';
 import { images } from '../globals.js';
 import ImageName from '../enums/ImageName.js';
-import { smallSpriteConfig } from '../../config/SpriteConfig.js';
 
 /**
  * InvinciblePowerUp - Grants temporary invincibility to the player.
@@ -27,29 +26,50 @@ import { smallSpriteConfig } from '../../config/SpriteConfig.js';
  * polymorphically when the power-up expires (see Player.updatePowerUp()).
  */
 export default class InvinciblePowerUp extends PowerUp {
+    // Shield sprite coordinates in PowerPipes.png
+    static SHIELD_SPRITESHEET_X = 616;        // X coordinate
+    static SHIELD_SPRITESHEET_Y = 0;          // Y coordinate
+    static SHIELD_SPRITESHEET_WIDTH = 684;    // Width
+    static SHIELD_SPRITESHEET_HEIGHT = 804;   // Height
+    
+    static WIDTH = 24;   // Game width for shield
+    static HEIGHT = 28;  // Game height for shield
+    
+    static SHIELD_SCALE = 24 / 684;  // Scale factor
+
     constructor(x, y) {
         // INHERITANCE: Call parent constructor using super() to initialize
         // PowerUp properties (which in turn initializes Entity properties)
         super(x, y, 5); // 5 seconds duration
+        
+        // Override dimensions to use shield size instead of base PowerUp size
+        this.dimensions.x = InvinciblePowerUp.WIDTH;
+        this.dimensions.y = InvinciblePowerUp.HEIGHT;
 
-        // Use Star sprite for Invincible
-        // star: [{ x: 307, y: 3566, width: 8, height: 8 }] (Sparkles?)
-        // Actually Star.js uses a sprite sheet. Let's use a frame from smallSpriteConfig if possible or just reuse Star logic?
-        // The prompt says "Use separate sprite animations for sparkle or bounce".
-        // I'll use a specific frame from Mario sprites.
-        // Let's use the "victory" pose as a placeholder or just a colored block.
-        // Actually, let's use the "Star" sprite if available in config.
-        // I don't see "Star" in smallSpriteConfig.
-        // I'll use "sparkles" frame 0.
-        const frame = smallSpriteConfig.sparkles[0];
+        // Get the PowerPipes spritesheet image and extract the shield sprite
+        const powerPipesSheet = images.get(ImageName.PowerPipes);
+        
+        // Create sprite
+        this.sprite = powerPipesSheet ? new Sprite(
+            powerPipesSheet,
+            InvinciblePowerUp.SHIELD_SPRITESHEET_X,
+            InvinciblePowerUp.SHIELD_SPRITESHEET_Y,
+            InvinciblePowerUp.SHIELD_SPRITESHEET_WIDTH,
+            InvinciblePowerUp.SHIELD_SPRITESHEET_HEIGHT
+        ) : null;
+    }
 
-        this.sprite = new Sprite(
-            images.get(ImageName.Mario),
-            frame.x,
-            frame.y,
-            frame.width,
-            frame.height
-        );
+    /**
+     * Override render method to scale the shield sprite to game size
+     */
+    render(context) {
+        if (this.isCollected || !this.sprite) return;
+        
+        // Render the shield sprite scaled down to game size
+        this.sprite.render(this.position.x, this.position.y, { 
+            x: InvinciblePowerUp.SHIELD_SCALE, 
+            y: InvinciblePowerUp.SHIELD_SCALE 
+        });
     }
 
     /**
