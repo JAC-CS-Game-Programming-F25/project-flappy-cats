@@ -4,6 +4,7 @@ import { images, sounds } from '../globals.js';
 import ImageName from '../enums/ImageName.js';
 import SoundName from '../enums/SoundName.js';
 import Pipe from './Pipe.js';
+import Player from './player/Player.js';
 
 /**
  * PowerUp - Base class for all power-up entities.
@@ -47,10 +48,14 @@ export default class PowerUp extends Entity {
         this.sprite.render(this.position.x, this.position.y);
     }
 
-    collidesWith(player) {
+    collidesWith(entity) {
         if (this.isCollected) return false;
+        
+        // Only collide with Player, not with pipes or other entities
+        if (!(entity instanceof Player)) return false;
+        
         // INHERITANCE: Use super to call parent class method
-        return super.collidesWith(player);
+        return super.collidesWith(entity);
     }
 
     collect(player) {

@@ -5,6 +5,7 @@ import SoundName from '../enums/SoundName.js';
 import { isAABBCollision } from '../../lib/Collision.js';
 import ImageName from '../enums/ImageName.js';
 import Pipe from './Pipe.js';
+import Player from './player/Player.js';
 
 export default class Star extends Entity {
     // Star sprite coordinates in spritesheet.png
@@ -62,6 +63,9 @@ export default class Star extends Entity {
 
     collidesWith(entity) {
         if (this.isCollected) return false;
+        
+        // Only collide with Player, not with pipes or other entities
+        if (!(entity instanceof Player)) return false;
 
         return isAABBCollision(
             this.position.x,

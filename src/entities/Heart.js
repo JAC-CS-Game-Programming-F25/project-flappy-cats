@@ -3,8 +3,8 @@ import Sprite from '../../lib/Sprite.js';
 import { images, sounds } from '../globals.js';
 import ImageName from '../enums/ImageName.js';
 import SoundName from '../enums/SoundName.js';
-import { smallSpriteConfig } from '../../config/SpriteConfig.js';
 import Pipe from './Pipe.js';
+import Player from './player/Player.js';
 
 export default class Heart extends Entity {
     static HEART_SPRITESHEET_X = 5500;    // X coordinate
@@ -64,9 +64,13 @@ export default class Heart extends Entity {
         });
     }
 
-    collidesWith(player) {
+    collidesWith(entity) {
         if (this.isCollected) return false;
-        return super.collidesWith(player);
+        
+        // Only collide with Player, not with pipes or other entities
+        if (!(entity instanceof Player)) return false;
+        
+        return super.collidesWith(entity);
     }
 
     collect(player) {

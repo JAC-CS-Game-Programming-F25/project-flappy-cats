@@ -2,6 +2,7 @@ import Entity from './Entity.js';
 import { images, canvas } from '../globals.js';
 import ImageName from '../enums/ImageName.js';
 import Sprite from '../../lib/Sprite.js';
+import Player from './player/Player.js';
 
 export default class Pipe extends Entity {
     static WIDTH = 32;   // Pipe width in game 
@@ -171,11 +172,14 @@ export default class Pipe extends Entity {
         context.restore();
     }
 
-    collidesWith(player) {
-        const playerLeft = player.position.x;
-        const playerRight = player.position.x + player.dimensions.x;
-        const playerTop = player.position.y;
-        const playerBottom = player.position.y + player.dimensions.y;
+    collidesWith(entity) {
+        // Only collide with Player, not with collectibles or other entities
+        if (!(entity instanceof Player)) return false;
+        
+        const playerLeft = entity.position.x;
+        const playerRight = entity.position.x + entity.dimensions.x;
+        const playerTop = entity.position.y;
+        const playerBottom = entity.position.y + entity.dimensions.y;
 
         const pipeLeft = this.position.x;
         const pipeRight = this.position.x + Pipe.WIDTH;

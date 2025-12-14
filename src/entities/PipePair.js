@@ -1,6 +1,7 @@
 import Entity from './Entity.js';
 import Pipe from './Pipe.js';
 import { canvas } from '../globals.js';
+import Player from './player/Player.js';
 
 export default class PipePair extends Entity {
     static GAP_HEIGHT = 200;
@@ -37,7 +38,10 @@ export default class PipePair extends Entity {
         this.pipes.forEach(pipe => pipe.render(context));
     }
 
-    collidesWith(player) {
-        return this.pipes.some(pipe => pipe.collidesWith(player));
+    collidesWith(entity) {
+        // Only collide with Player, not with collectibles or other entities
+        if (!(entity instanceof Player)) return false;
+        
+        return this.pipes.some(pipe => pipe.collidesWith(entity));
     }
 }

@@ -295,6 +295,48 @@ export default class PlayState extends State {
 	}
 
 	/**
+	 * Checks if a collectible entity overlaps with any pipe.
+	 * @param {Entity} collectible - The collectible entity to check
+	 * @returns {boolean} True if overlapping with any pipe, false otherwise
+	 */
+	isOverlappingWithPipes(collectible) {
+		for (const pipePair of this.pipes) {
+			for (const pipe of pipePair.pipes) {
+				// Check horizontal overlap
+				const collectibleLeft = collectible.position.x;
+				const collectibleRight = collectible.position.x + collectible.dimensions.x;
+				
+				// For hearts, account for bounce offset in vertical position
+				let collectibleTop, collectibleBottom;
+				if (collectible instanceof Heart) {
+					// Heart has bounce animation, check with bounce offset
+					const bounceOffset = Math.sin(collectible.animationTimer * Math.PI * 2) * 3;
+					collectibleTop = collectible.position.y + bounceOffset;
+					collectibleBottom = collectible.position.y + bounceOffset + collectible.dimensions.y;
+				} else {
+					collectibleTop = collectible.position.y;
+					collectibleBottom = collectible.position.y + collectible.dimensions.y;
+				}
+				
+				const pipeLeft = pipe.position.x;
+				const pipeRight = pipe.position.x + Pipe.WIDTH;
+				
+				// Check if there's horizontal overlap
+				if (collectibleRight > pipeLeft && collectibleLeft < pipeRight) {
+					if (pipe.isTop) {
+						// Top pipe: check if collectible is above the gap (inside the pipe)
+						if (collectibleTop < pipe.position.y) return true;
+					} else {
+						// Bottom pipe: check if collectible is below the gap (inside the pipe)
+						if (collectibleBottom > pipe.position.y) return true;
+					}
+				}
+			}
+		}
+		return false;
+	}
+
+	/**
 	 * Draws the game entities and HUD on screen.
 	 */
 	render() {
@@ -314,19 +356,25 @@ export default class PlayState extends State {
 			pipePair.render(context);
 		});
 
-		// Draw stars
+		// Draw stars (only if not overlapping with pipes)
 		this.stars.forEach(star => {
-			star.render(context);
+			if (!this.isOverlappingWithPipes(star)) {
+				star.render(context);
+			}
 		});
 
-		// Draw hearts
+		// Draw hearts (only if not overlapping with pipes)
 		this.hearts.forEach(heart => {
-			heart.render(context);
+			if (!this.isOverlappingWithPipes(heart)) {
+				heart.render(context);
+			}
 		});
 
-		// Draw power-ups
+		// Draw power-ups (only if not overlapping with pipes)
 		this.powerUps.forEach(powerUp => {
-			powerUp.render(context);
+			if (!this.isOverlappingWithPipes(powerUp)) {
+				powerUp.render(context);
+			}
 		});
 
 		// Draw player
