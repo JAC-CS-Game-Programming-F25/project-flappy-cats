@@ -236,10 +236,10 @@ export default class PlayState extends State {
 			}
 		}
 
-		// Restore stars
+		// Restore stars (use starEntities key to avoid conflict with stars count)
 		this.stars = [];
-		if (savedData.stars && Array.isArray(savedData.stars)) {
-			for (const starData of savedData.stars) {
+		if (savedData.starEntities && Array.isArray(savedData.starEntities)) {
+			for (const starData of savedData.starEntities) {
 				const star = this.starFactory.spawn();
 				star.position.x = starData.position.x;
 				star.position.y = starData.position.y;
@@ -291,9 +291,13 @@ export default class PlayState extends State {
 	 *  - Game-over detection
 	 */
 	update(dt) {
-		// Sync lives with player health first (they represent the same thing in this game)
+		// Sync lives and stars with player first (they represent the same thing in this game)
 		if (this.player) {
 			this.gameController.lives = this.player.health; // Keep lives in sync with player health
+			// Sync stars from player to GameController for persistence
+			if (this.player.stars !== undefined) {
+				this.gameController.stars = this.player.stars;
+			}
 		}
 
 		// Check for game over condition (player dead or no lives)
@@ -313,10 +317,14 @@ export default class PlayState extends State {
 		// Update player
 		this.player.update(dt); // Update player position, animations, and power-ups
 		
-		// Sync lives with player health (they represent the same thing in this game)
+		// Sync lives and stars with player health (they represent the same thing in this game)
 		// Note: We also sync at the beginning of update to catch death immediately
 		if (this.player) {
 			this.gameController.lives = this.player.health; // Keep lives in sync with player health
+			// Sync stars from player to GameController for persistence
+			if (this.player.stars !== undefined) {
+				this.gameController.stars = this.player.stars;
+			}
 		}
 
 		// Check if slow motion is active (SlowPowerUp reduces Pipe.SPEED to half)

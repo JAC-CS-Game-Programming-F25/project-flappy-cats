@@ -11,7 +11,7 @@ export default class GameController {
         const preservedCatIndex = this.selectedCatIndex !== undefined ? this.selectedCatIndex : 0;
         
         this.score = 0;
-        //this.stars = 0;
+        this.stars = 0; // Track stars collected (for display in GameOverState)
         this.lives = 3;
         this.selectedCatIndex = preservedCatIndex; // Preserve selected cat index
         this.highScore = Number(localStorage.getItem(HIGH_SCORE_KEY) || 0);
@@ -42,9 +42,14 @@ export default class GameController {
     isGameOver() { return this.lives <= 0; }
 
     saveGameState(activeState, playState = null) {
+        // Update stars in GameController from player if available
+        if (this.player && this.player.stars !== undefined) {
+            this.stars = this.player.stars;
+        }
+        
         const data = {
             score: this.score, // Current game score
-            stars: this.player?.stars || 0, // Player's collected stars (from player object)
+            stars: this.stars || this.player?.stars || 0, // Stars collected
             lives: this.lives, // Remaining lives
             selectedCatIndex: this.selectedCatIndex, // Which cat was selected
             activeState, // Current game state (Play, Pause, GameOver)
@@ -77,8 +82,8 @@ export default class GameController {
                 isDead: pipePair.isDead
             }));
 
-            // Save stars (only uncollected ones)
-            data.stars = playState.stars
+            // Save star entities (only uncollected ones) - use different key to avoid overwriting stars count
+            data.starEntities = playState.stars
                 .filter(star => !star.isCollected && star.position.x > -100) // Only save visible, uncollected stars
                 .map(star => ({
                     position: { x: star.position.x, y: star.position.y }
@@ -120,10 +125,10 @@ export default class GameController {
     }
 
     restoreFromData(data) {
-        this.score = data.score; // Restore saved score
-        // this.stars = data.stars;
+        this.score = data.score || 0; // Restore saved score, default to 0 if undefined
+        this.stars = data.stars || 0; // Restore saved stars, default to 0 if undefined
         // this.lives = data.lives;
-        this.selectedCatIndex = data.selectedCatIndex; // Restore selected cat
+        this.selectedCatIndex = data.selectedCatIndex || 0; // Restore selected cat, default to 0
         this.addScore(0); // Refresh high score UI without changing score
     }
 

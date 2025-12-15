@@ -30,13 +30,24 @@ export default class GameOverState extends State {
 	/**
 	 * Called when entering the Game Over screen.
 	 * - Updates high score if the player reached a new record
-	 * - Clears persistent game data in localStorage
+	 * - Ensures score is properly restored if coming from a saved state
+	 * - Does NOT clear game state - score should persist until user chooses to restart
 	 */
 	enter() {
-		// Clear saved game state so next run starts fresh
-		if (this.gameController.clearGameState) {
-			this.gameController.clearGameState();
+		// If we're restoring from a saved state, make sure score and stars are loaded
+		const savedData = this.gameController.loadGameState();
+		if (savedData) {
+			if (savedData.score !== undefined) {
+				this.gameController.score = savedData.score || 0;
+			}
+			if (savedData.stars !== undefined) {
+				this.gameController.stars = savedData.stars || 0;
+			}
 		}
+		
+		// DO NOT clear game state here - we want to preserve the score and stars
+		// so they display correctly when the user reloads the page
+		// Game state will be cleared when user chooses to restart or select a new cat
 	}
 
 	/**
@@ -48,6 +59,8 @@ export default class GameOverState extends State {
 	update(dt) {
 		// ENTER -> Retry with same cat
 		if (input.isKeyPressed('ENTER')) {
+			// Clear saved game state before restarting
+			this.gameController.clearGameState();
 			// Reset game state and restart
 			this.gameController.resetAndCreateNewSession();
 			// Reset the game started flag so PlayState will reinitialize
@@ -60,6 +73,8 @@ export default class GameOverState extends State {
 
 		// C -> Back to cat selection
 		if (input.isKeyPressed('C')) {
+			// Clear saved game state before going to cat selection
+			this.gameController.clearGameState();
 			// Reset game state
 			this.gameController.resetAndCreateNewSession();
 			stateMachine.change(GameStateName.CatSelect);
@@ -140,14 +155,16 @@ export default class GameOverState extends State {
 			context.fillText(numberText, boxX + boxWidth - padding, y);
 		};
 
-		// Current Score
-		renderStat('Current Score', Math.floor(this.gameController.score), statsY);
+		// Current Score (ensure it's a valid number)
+		const currentScore = Number(this.gameController.score) || 0;
+		renderStat('Current Score', Math.floor(currentScore), statsY);
 
 		// High Score
 		renderStat('High Score', this.gameController.highScore, statsY + lineHeight);
 
-		// Stars collected (from player if available)
-		const stars = this.gameController.player?.stars || 0;
+		// Stars collected (from GameController, which persists across reloads)
+		// Ensure it's a number, not an array or object
+		const stars = Number(this.gameController.stars) || 0;
 		renderStat('Stars Collected', stars, statsY + lineHeight * 2);
 
 		// Options section (shifted more to the right)
